@@ -1,0 +1,35 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Users{% endblock %}
+
+{% block content %}
+{{ ui.page_header('All Users', ui.plural(page.total, 'registered user'), 'people') }}
+{{ ui.search_form(url_for('admin.users'), 'Search by name, exact email or city', term) }}
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for u in page.items %}
+          <tr>
+            <td>{{ ui.rownum(page, loop) }}</td>
+            <td class="fw-semibold">{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.phone }}</td>
+            <td>{{ u.city }}</td>
+            <td class="text-end text-nowrap">
+              {{ ui.action_btn(url_for('admin.edit_user', id=u.id), 'Edit', 'pencil', 'secondary') }}
+              {{ ui.post_btn(url_for('admin.delete_user', id=u.id), 'Delete', 'trash', 'danger',
+                               confirm='Delete this user and all their bookings?') }}
+            </td>
+          </tr>
+        {% else %}
+          {{ ui.empty(colspan=6) }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ ui.pagination(page, 'user') }}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/admin_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">All Users</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+        <table class="table table-bordered table-striped">
+
+            <tr>
+                <th colspan="10">
+                    <form method="POST" action="{{ url_for('users') }}" class="form-inline my-2 my-lg-0">
+                        <input class="form-control mr-sm-2" type="search" name="search_query" placeholder="Search Users" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    </form>
+                </th>
+            </tr>
+
+            <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>City</th>
+   
+                <th>Edit</th>
+                <th>Remove</th>
+        
+            </tr>
+
+
+
+
+
+        {% if result %}
+            {% for rows in result %}
+            
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ rows.name }}</td>
+                <td>{{ rows.email }}</td>
+                <td>{{ rows.phone }}</td>
+                <td>{{ rows.city }}</td>
+      
+    
+                <td><a href="{{ url_for('user_edit', id=rows[0] ) }}" class="btn btn-warning btn-sm">Edit</a></td>
+                <td><a href="{{ url_for('user_delete', id=rows[0] ) }}" class="btn btn-danger btn-sm">X</a></td>
+            </tr>
+
+            {% endfor %}
+            {% else %}
+            <tr><td>No Record</td></tr>
+        {% endif %}
+        
+
+
+        </table>
+
+{% endblock %}

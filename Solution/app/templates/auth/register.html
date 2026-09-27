@@ -1,0 +1,34 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-9 col-lg-7">
+    <div class="card shadow-sm auth-card">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-plus text-primary display-5"></i>
+          <h1 class="h3 mt-2">Register Form</h1>
+          <p class="text-body-secondary mb-0">Create an account to book appointments.</p>
+        </div>
+        <form class="needs-validation" novalidate method="post" action="{{ url_for('auth.register') }}">
+    {{ ui.csrf_field() }}
+          <div class="row">
+            <div class="col-md-6">{{ ui.field('name', 'Full Name', form.name) }}</div>
+            <div class="col-md-6">{{ ui.field('email', 'Email', form.email, type='email') }}</div>
+            <div class="col-md-6">{{ ui.field('password', 'Password', type='password',
+                                              help='At least ' ~ config.MIN_PASSWORD_LENGTH ~ ' characters') }}</div>
+            <div class="col-md-6">{{ ui.field('phone', 'Phone', form.phone, type='tel') }}</div>
+            <div class="col-md-6">{{ ui.field('city', 'City', form.city) }}</div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Register</button>
+        </form>
+        <p class="text-center small mt-4 mb-0">
+          Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

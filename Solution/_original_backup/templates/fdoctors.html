@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/front_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+
+
+
+<blockquote class="blockquote text-center py-5">
+   <h1 class="mb-0 display-4 text-uppercase">Our Doctors.</h1>
+   <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+
+   <form method="post" class="form-inline my-2 my-lg-0">
+      <input class="form-control mr-sm-2" type="search" name="search_query" placeholder="Search Doctors" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+  </form>
+ </blockquote>
+
+
+
+<div class="row">
+
+
+
+{% if result %}
+{% for rows in result %}
+
+
+
+
+  
+  
+    <div class="col-md-6 col-sm-6 col-lg-6">
+      <div class="card flex-md-row mb-4 shadow-sm h-md-250">
+         <div class="card-body d-flex flex-column align-items-start">
+          
+            <strong class="d-inline-block mb-2 text-dark">{{ rows[1] }}</strong>
+            <div class="mb-1 text-muted small"><b>{{ rows[2] }}</b> <small>( {{ rows[3] }} )</small></div>
+            <p class="card-text mb-auto text-dark"> {{ rows[7][:100] }} ...</p>
+            <a href="{{ url_for('book_doctor', id=rows[0]) }}" class="btn btn-outline-dark bg-dark btn-sm mt-3" role="button" style="color:white">View Detail</a>
+         </div>
+  
+
+         <img class="card-img-right flex-auto d-none d-lg-block img img-thumbnail" src="static/images/{{ rows[6] }}" style="width: 200px; height: 250px;">
+      </div>
+   </div>
+  
+  
+  
+
+
+{% endfor %}
+
+{% else %}
+<p class="alert alert-info">No Record</p>
+{% endif %}
+
+
+
+
+</div>
+
+
+
+
+
+{% endblock %}

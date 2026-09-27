@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/front_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+<h1 class="heading">Book <span class="high">Facility</span></h1>
+<br>
+
+
+{% if result %}
+
+<div class="row">
+    
+
+
+   <div class="col-md-12 col-sm-12 col-lg-12">
+      <table class="table table-bordered table-striped">
+
+          <tr>
+              <td>{{ result[0][1] }}</td>
+          </tr>
+
+          <tr>
+              <td>{{ result[0][2] }}</td>
+          </tr>
+
+
+
+          <tr>
+            <td>
+              {% set services = result[0][4].split(',') %}
+              {% set prices = result[0][5].split(',') %}
+              <div class="d-flex">
+                <div class="mr-3">
+                  {% for service in services %}
+                    <span class="badge badge-warning">{{ service }}</span>
+                    <br>
+                  {% endfor %}
+                </div>
+                <div>
+                  {% for price in prices %}
+                    <span class="badge badge-info">{{ price }}</span>
+                    <br>
+                  {% endfor %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          
+          
+          
+          
+
+
+          <tr>
+            <td>{{ result[0][6] }}</td>
+          </tr>
+
+
+          <tr>
+            <td>{{ result[0][3] }}</td>
+          </tr>
+
+  
+        {% if user_id and user_role=='user' %}
+          <tr>
+         
+            <td>
+              <form method="post" enctype="multipart/form-data">
+
+                    
+                    <input type="hidden" name="facility_id" value="{{ facility_id }}">
+                    <input type="hidden" name="user_id" value="{{ user_id }}">
+
+                    <div class="form-group">
+                        <label for="date">Uploding Date</label>
+                        <input type="date" name="date" value="{{ today }}" readonly class="form-control" id="date" min="{{ today }}" max="{{ today }}" required>
+                    </div>
+
+                    
+                    <div class="form-group">
+                        <label for="service">Choose Service</label>
+                        <select name="service" class="form-control" id="service" required>
+                            <option value="">Choose</option>
+                            {% for service in result[0][4].split(',') %}
+                                <option value="{{ service }}">{{ service }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- update image -->
+                    <div class="form-group">
+                        <label for="image">Upload Related Image</label>
+                        <input type="file" name="image" class="form-control" id="image">
+                    </div>
+
+
+                    <input type="submit" name="submit" value="Book" class="btn btn-warning btn-sm">
+              </form>
+
+              <!-- show all flash messages here -->
+                {% for message in get_flashed_messages() %}
+                    <br><p class="alert alert-info">{{ message }}</p>
+                {% endfor %}
+            </td>
+            
+
+          </tr>
+        {% else %}
+        <tr><td><p class="alert alert-info">Please Login As User before Booking</p></td></tr>
+        {% endif %}
+
+
+
+
+
+
+    </table>
+
+
+
+   </div>
+
+</div>
+   
+
+
+
+
+        
+{% else %}
+<p class="alert alert-info">No Record</p>
+{% endif %} 
+        
+
+{% endblock %}

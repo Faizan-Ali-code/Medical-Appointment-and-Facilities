@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/admin_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">Manage Hospitals.</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th colspan="7">
+                        <form method="POST" action="{{ url_for('hospitals') }}" class="form-inline my-2 my-lg-0">
+                            <input class="form-control mr-sm-2" type="search" name="hospital_name" placeholder="Search Hospital" aria-label="Search">
+                            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                        </form>
+                    </th>
+                </tr>
+                <tr>
+                    <th>No</th>
+                    <th>Name</th>
+                    <th>Image</th>
+                    <th>City</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                    <th>Edit</th>
+                    <th>Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if result %}
+                {% for rows in result %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ rows.name }}</td>
+                    <td><img src="{{ url_for('static', filename='images/' + rows.image) }}" width="40" height="40"></td>
+                    <td>{{ rows.city }}</td>
+                    <td>{{ rows.address[:30] }} ...</td>
+                    <td>{{ rows.phone }}</td>
+                    <td><a href="{{ url_for('hospital_edit', id=rows.id ) }}" class="btn btn-info btn-sm">Edit</a></td>
+                    <td><a href="{{ url_for('hospital_delete', id=rows.id ) }}" class="btn btn-danger btn-sm">X</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="7">No Record</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        
+
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/admin_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+<blockquote class="blockquote text-center py-5">
+    <h1 class="mb-0 display-4 text-uppercase">Update User.</h1>
+    <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+</blockquote>
+
+{% if row %}
+
+
+<div class="card">
+    <div class="card-body">
+        
+<form method="post">
+
+
+    <input type="hidden" name="did" value="{{ row.id }}">
+
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" value="{{ row.name if row else '' }}" required class="form-control">
+    </div>
+
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" value="{{ row.email if row else '' }}" readonly class="form-control">
+    </div>
+
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" value="{{ row.password if row else '' }}" required class="form-control">
+    </div>
+
+
+
+    <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="phone" name="phone" id="phone" value="{{ row.phone if row else '' }}" required class="form-control">
+    </div>
+
+
+    <div class="form-group">
+        <label for="city">City</label>
+        <input type="city" name="city" id="city" value="{{ row.city if row else '' }}" required class="form-control">
+    </div>
+
+    <input type="submit" name="submit" value="Update" class="btn btn-dark">
+
+
+</form>
+
+
+{% if message %}
+    <h6 class="alert alert-info">{{ message }}</h6>
+{% endif %}
+
+
+    </div>
+    </div>
+
+
+{% endif %}
+{% endblock %}

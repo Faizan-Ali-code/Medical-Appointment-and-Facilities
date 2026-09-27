@@ -1,0 +1,39 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% set editing = doctor.id is not none %}
+{% set f = request.form if request.method == 'POST' else doctor %}
+{% block title %}{{ 'Update' if editing else 'Add' }} Doctor{% endblock %}
+
+{% block content %}
+{% call ui.page_header(('Update' if editing else 'Add') ~ ' Doctor', doctor.name if editing else 'Add a doctor to a hospital', 'person-badge') %}
+  <a href="{{ url_for('admin.doctors') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+{% endcall %}
+
+<div class="card shadow-sm"><div class="card-body p-4">
+  <form class="needs-validation" novalidate method="post" enctype="multipart/form-data">
+    {{ ui.csrf_field() }}
+    <div class="row">
+      <div class="col-md-6">{{ ui.field('name', 'Doctor Name', f.name) }}</div>
+      <div class="col-md-6">{{ ui.hospital_select(hospitals, f.hospital_id | int if f.hospital_id else None) }}</div>
+      <div class="col-md-6">{{ ui.field('specialization', 'Specialization', f.specialization) }}</div>
+      <div class="col-md-6">{{ ui.field('fee', 'Fee (Rs.)', f.fee) }}</div>
+    </div>
+    {{ ui.field('slots', 'Time Slots', f.slots, placeholder='10:00 AM, 10:10 AM, 10:15 AM', help='Separate slots with commas') }}
+    {% set chosen = request.form.getlist('days') if request.method == 'POST' else doctor.day_list %}
+    <fieldset class="mb-3">
+      <legend class="form-label fs-6 mb-1">Working Days</legend>
+      <div class="d-flex flex-wrap gap-2">
+        {% for day in weekdays %}
+          <input type="checkbox" class="btn-check" name="days" value="{{ day }}" id="day-{{ day }}" autocomplete="off"
+                 {{ 'checked' if day in chosen }}>
+          <label class="btn btn-sm btn-outline-primary" for="day-{{ day }}">{{ day }}</label>
+        {% endfor %}
+      </div>
+      <div class="form-text">Leave all selected (or none) for every day.</div>
+    </fieldset>
+    {{ ui.textarea('description', 'Description', f.description) }}
+    {{ ui.file_input('image', 'Doctor Image', required=not editing, current=doctor.image) }}
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>{{ 'Update' if editing else 'Add' }}</button>
+  </form>
+</div></div>
+{% endblock %}

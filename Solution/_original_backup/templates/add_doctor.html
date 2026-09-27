@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% if role == 'admin' %}
+{% include "includes/admin_nav.html" %}
+
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+
+<blockquote class="blockquote text-center py-5">
+    <h1 class="mb-0 display-4 text-uppercase">Add Doctors.</h1>
+    <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+</blockquote>
+        
+
+<div class="card">
+    <div class="card-body">
+        
+<form method="post" action="{{ url_for('add_doctor') }}" enctype="multipart/form-data">
+
+
+    <div class="form-group">
+        <label for="name">Doctor Name</label>
+        <input type="text" name="name" id="name" required class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="hospital_id">Doctor Hospital</label>
+        <select name="hospital_id" id="hospital_id" required class="form-control">
+            <option value="" disabled selected>Choose</option>
+            {% for hospital in hospitals %}
+            <option value="{{ hospital.id }}">{{ hospital.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div class="form-group">
+        <label for="specialization">Doctor Specialization</label>
+        <input type="text" name="specialization" id="specialization" required class="form-control">
+    </div>
+
+
+
+    <div class="form-group">
+        <label for="fee">Doctor Fee</label>
+        <input type="text" name="fee" id="fee" required class="form-control">
+    </div>
+
+
+
+
+    <div class="form-group">
+        <label for="slots">Doctor Slots</label>
+        <input type="text" name="slots" id="slots" required class="form-control" placeholder="Seperate With Comma e.g. (10:00 AM, 10:10 AM, 10:15 AM)">
+    </div>
+
+
+    <!-- description -->
+    <div class="form-group">
+        <label for="description">Doctor Description</label>
+        <textarea name="description" id="description" required class="form-control"></textarea>
+    </div>
+
+
+    <!-- image -->
+    <div class="form-group">
+        <label for="image">Doctor Image</label>
+        <input type="file" name="image" id="image" required class="form-control">
+    </div>
+
+
+    <input type="submit" name="submit" value="Add" class="btn btn-dark">
+
+
+</form>
+
+
+{% if message %}
+<h4 class="alert alert-primary">{{ message }}</h4>
+{% endif %}
+
+        </div>
+        </div>
+
+{% endblock %}

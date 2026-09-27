@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Reschedule Appointment{% endblock %}
+
+{% block content %}
+{% call ui.page_header('Reschedule Appointment', doctor.name ~ ' · ' ~ doctor.hospital_name, 'calendar2-week') %}
+  <a href="{{ url_for('bookings.my_doctor_bookings') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+{% endcall %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <p class="mb-4">Current appointment: <strong>{{ booking.date | longdate }}</strong> at
+          <span class="badge text-bg-info">{{ booking.slot }}</span></p>
+        <form class="needs-validation" novalidate method="post">
+          {{ ui.csrf_field() }}
+          {% include 'bookings/_slot_picker.html' %}
+          <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check2 me-1"></i>Save new time</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{# Facilities table. Needs `facilities`; optional `show_hospital` and `offset` (row numbers across pages). #}
+{% import 'partials/macros.html' as ui %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th>{% if show_hospital %}<th>Hospital</th>{% endif %}
+          <th>Services &amp; Fee (Rs.)</th><th>Contact</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in facilities %}
+          <tr>
+            <td>{{ (offset or 0) + loop.index }}</td>
+            <td class="fw-semibold">{{ f.name }}</td>
+            {% if show_hospital %}<td>{{ f.hospital_name }}</td>{% endif %}
+            <td>
+              {% for service, fee in f.service_fees %}
+                <span class="badge bg-body-tertiary text-body border me-1 mb-1">{{ service }}{% if fee %} &middot; {{ fee }}{% endif %}</span>
+              {% endfor %}
+            </td>
+            <td class="text-nowrap"><i class="bi bi-telephone me-1"></i>{{ f.contact }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('bookings.book_facility', id=f.id) }}" class="btn btn-sm btn-primary">Book</a>
+            </td>
+          </tr>
+        {% else %}
+          {{ ui.empty(colspan=6) }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

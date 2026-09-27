@@ -1,0 +1,18 @@
+{# Date + time slot fields with live availability (static/js/app.js).
+   Needs `doctor`, `today`; optional `booking` (when rescheduling). #}
+{% import 'partials/macros.html' as ui %}
+<div data-slot-picker
+     data-url="{{ url_for('public.doctor_availability', id=doctor.id, exclude=booking.id if booking else None) }}">
+  {{ ui.field('date', 'Choose Date', booking.date.isoformat() if booking else '', type='date', min=today.isoformat(),
+              help='Working days: ' ~ doctor.day_list | join(', ')) }}
+  <div class="mb-3">
+    <label for="slot" class="form-label">Choose Time Slot</label>
+    <select name="slot" id="slot" class="form-select" required>
+      <option value="">Choose time</option>
+      {% for slot in doctor.slot_list %}
+        <option value="{{ slot }}" {{ 'selected' if booking and booking.slot == slot }}>{{ slot }}</option>
+      {% endfor %}
+    </select>
+    <div class="form-text" data-slot-message aria-live="polite"></div>
+  </div>
+</div>

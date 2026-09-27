@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% if role == 'admin' %}
+{% include "includes/admin_nav.html" %}
+
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">Add Hospital</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+        <div class="card">
+            <div class="card-body">
+                
+<form action="{{ url_for('addhospital') }}" method="post" enctype="multipart/form-data">
+
+
+    <div class="form-group">
+        <label for="name">Hospital Name</label>
+        <input type="text" name="name" id="name" required class="form-control">
+    </div>
+
+
+    <div class="form-group">
+        <label for="city">Hospital City</label>
+        <input type="text" name="city" id="city" required class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="address">Hospital Address</label>
+        <input type="text" name="address" id="address" required class="form-control">
+    </div>
+
+
+    <div class="form-group">
+        <label for="phone">Hospital Phone</label>
+        <input type="number" name="phone" id="phone" required class="form-control">
+    </div>
+
+
+    <div class="form-group">
+        <label for="description">Hospital Description</label>
+        <textarea name="description" id="description" class="form-control" required></textarea>
+    </div>
+
+    
+    <div class="form-group">
+        <label for="image">Hospital Image</label>
+        <input type="file" name="image" id="image" required class="form-control">
+    </div>
+        
+
+    <input type="submit" name="submit" value="Add" class="btn btn-dark">
+
+
+</form>
+
+
+{% if message %}
+<h5 class="alert alert-info">{{ message }}</h5>
+{% endif %}
+
+</div>
+</div>
+        
+
+{% endblock %}

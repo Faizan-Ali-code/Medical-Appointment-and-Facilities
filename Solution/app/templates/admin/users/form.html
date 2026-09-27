@@ -1,0 +1,12 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Update User{% endblock %}
+
+{% block content %}
+{% call ui.page_header('Update User', user.name, 'person') %}
+  <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+{% endcall %}
+<div class="card shadow-sm"><div class="card-body p-4">
+  {% include 'account/_profile_form.html' %}
+</div></div>
+{% endblock %}

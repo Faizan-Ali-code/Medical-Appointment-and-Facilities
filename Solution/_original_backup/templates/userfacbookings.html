@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/user_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">My Facilities Bookings</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Facility</th>
+                    <th>Image</th>
+                    <th>Date</th>
+                    <th>Service</th>
+                    <th>Result</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% if result %}
+                {% for rows in result %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ rows[1] }}</td>
+                    <td><a href="../static/images/{{rows[4]}}" download><img src="../static/images/{{rows[4]}}" width="60px" height="60px"></a></td>
+                    <td>{{ rows[2] }}</td>
+                    <td>{{ rows[3] }}</td>
+                    <td>{{ rows[5] }}</td>
+                    <td>
+                        
+                        {% if rows[6] == 0 %}
+                        Pending
+                        {% else %}
+                        Approved
+                        {% endif %}
+
+
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="7">No Record</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        
+
+{% endblock %}

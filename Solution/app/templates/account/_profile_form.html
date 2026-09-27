@@ -1,0 +1,16 @@
+{# Profile fields, used by the user's settings page and the admin's user edit page. Needs `user`. #}
+{% import 'partials/macros.html' as ui %}
+<form class="needs-validation" novalidate method="post">
+    {{ ui.csrf_field() }}
+  <div class="row">
+    <div class="col-md-6">{{ ui.field('name', 'Name', user.name) }}</div>
+    <div class="col-md-6">{{ ui.field('email', 'Email', user.email, type='email', readonly=True, required=False,
+                                      help='Email cannot be changed') }}</div>
+    <div class="col-md-6">{{ ui.field('password', 'New Password', type='password', required=False,
+                                      placeholder='Leave empty to keep the current password',
+                                      help='At least ' ~ config.MIN_PASSWORD_LENGTH ~ ' characters') }}</div>
+    <div class="col-md-6">{{ ui.field('phone', 'Phone', user.phone, type='tel') }}</div>
+    <div class="col-md-6">{{ ui.field('city', 'City', user.city) }}</div>
+  </div>
+  <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>Update</button>
+</form>

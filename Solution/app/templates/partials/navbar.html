@@ -1,0 +1,82 @@
+{% set ep = request.endpoint or '' %}
+{% macro nav_link(endpoint, label, icon) -%}
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if ep == endpoint }}" href="{{ url_for(endpoint) }}">
+      <i class="bi bi-{{ icon }} me-1"></i>{{ label }}</a>
+  </li>
+{%- endmacro %}
+{% macro menu_item(endpoint, label, icon) -%}
+  <li><a class="dropdown-item {{ 'active' if ep == endpoint }}" href="{{ url_for(endpoint) }}">
+    <i class="bi bi-{{ icon }} me-2"></i>{{ label }}</a></li>
+{%- endmacro %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-semibold" href="{{ url_for('public.index') }}">
+      <i class="bi bi-heart-pulse-fill me-1"></i>MediBook
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+        {{ nav_link('public.index', 'Hospitals', 'hospital') }}
+        {{ nav_link('public.doctors', 'Doctors', 'person-badge') }}
+        {{ nav_link('public.facilities', 'Facilities', 'clipboard2-pulse') }}
+      </ul>
+
+      <ul class="navbar-nav">
+        {% if current_user %}
+          {% if current_user.is_admin %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {{ 'active' if ep.startswith('admin.') }}" href="#"
+                 role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-speedometer2 me-1"></i>Manage</a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {{ menu_item('admin.dashboard', 'Dashboard', 'speedometer2') }}
+                <li><hr class="dropdown-divider"></li>
+                {{ menu_item('admin.add_hospital', 'Add Hospital', 'plus-circle') }}
+                {{ menu_item('admin.hospitals', 'Hospitals', 'hospital') }}
+                <li><hr class="dropdown-divider"></li>
+                {{ menu_item('admin.add_doctor', 'Add Doctor', 'plus-circle') }}
+                {{ menu_item('admin.doctors', 'Doctors', 'person-badge') }}
+                <li><hr class="dropdown-divider"></li>
+                {{ menu_item('admin.add_facility', 'Add Facility', 'plus-circle') }}
+                {{ menu_item('admin.facilities', 'Facilities', 'clipboard2-pulse') }}
+                <li><hr class="dropdown-divider"></li>
+                {{ menu_item('admin.users', 'Users', 'people') }}
+              </ul>
+            </li>
+          {% else %}
+            {{ nav_link('bookings.my_doctor_bookings', 'Doctor Bookings', 'calendar-check') }}
+            {{ nav_link('bookings.my_facility_bookings', 'Test Bookings', 'file-medical') }}
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+               aria-expanded="false"><i class="bi bi-person-circle me-1"></i>{{ current_user.name }}</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              {{ menu_item('account.account', 'Account', 'person') }}
+              {{ menu_item('account.setting', 'Setting', 'gear') }}
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="{{ url_for('auth.logout') }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                </form>
+              </li>
+            </ul>
+          </li>
+        {% else %}
+          {{ nav_link('auth.login', 'Login', 'box-arrow-in-right') }}
+          {{ nav_link('auth.register', 'Register', 'person-plus') }}
+        {% endif %}
+        <li class="nav-item">
+          <button type="button" class="nav-link btn btn-link" data-theme-toggle
+                  title="Toggle dark mode" aria-label="Toggle dark mode"><i class="bi bi-moon-stars"></i></button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/front_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+
+<blockquote class="blockquote text-center py-5">
+  <h1 class="mb-0 display-4 text-uppercase">Book Doctor</h1>
+  <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+</blockquote>
+
+
+{% if result %}
+
+<div class="row">
+    
+
+    <div class="col-md-4 col-sm-4 col-lg-4">
+      <img class="img img-thumbnail" src="../static/images/{{ result[0][6] }}" style="width: 100%; height: 450px;">
+   </div>
+
+   <div class="col-md-8 col-sm-8 col-lg-8">
+      <table class="table table-bordered table-striped">
+
+          <tr>
+              <td>{{ result[0][1] }}</td>
+          </tr>
+
+          <tr>
+              <td>{{ result[0][2] }}</td>
+          </tr>
+
+          <tr>
+            <td>{{ result[0][3] }}</td>
+          </tr>
+
+          <tr>
+            <td>Rs. {{ result[0][4] }}</td>
+          </tr>
+
+      
+          <tr>
+          <td>
+            {% for slot in result[0][5].split(',') %}
+                <span class="badge badge-warning">{{ slot }}</span>
+                <br>
+            {% endfor %}
+          </td>
+        </tr>
+
+
+          <tr>
+            <td>{{ result[0][7] }}</td>
+          </tr>
+
+
+  
+        {% if user_id and user_role=='user' %}
+          <tr>
+         
+            <td>
+              <form method="post">
+
+                    
+                    <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+                    <input type="hidden" name="user_id" value="{{ user_id }}">
+
+                    <div class="form-group">
+                        <label for="date">Choose Date</label>
+                        <input type="date" name="date" class="form-control" id="date" min="{{ today }}" required>
+                    </div>
+
+                    
+                    <div class="form-group">
+                        <label for="slot">Choose Time Slot</label>
+                        <select name="slot" class="form-control" id="slot" required>
+                            <option value="">Choose Time</option>
+                            {% for slot in result[0][5].split(',') %}
+                                <option value="{{ slot }}">{{ slot }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <input type="submit" name="submit" value="Book" class="btn btn-warning btn-sm">
+              </form>
+
+              <!-- show all flash messages here -->
+                {% for message in get_flashed_messages() %}
+                    <br><p class="alert alert-info">{{ message }}</p>
+                {% endfor %}
+            </td>
+            
+
+          </tr>
+        {% else %}
+        <tr><td><p class="alert alert-info m-0">Please Login As User before Booking</p></td></tr>
+        {% endif %}
+
+
+
+
+
+
+    </table>
+
+
+
+   </div>
+
+</div>
+   
+
+
+
+
+        
+{% else %}
+<p class="alert alert-info">No Record</p>
+{% endif %} 
+        
+
+{% endblock %}

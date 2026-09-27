@@ -1,0 +1,66 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand text-white" href="#">Admin Account</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav ml-auto mr-5">
+  
+          
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('account') }}">Home</a>
+        </li>
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('addhospital') }}">Add Hospital</a>
+        </li>
+
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('hospitals') }}">Hospitals</a>
+        </li>
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('addfacility') }}">Add Facility</a>
+        </li>
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('facilities') }}">Facilities</a>
+        </li>
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('add_doctor') }}">Add Doctor</a>
+        </li>
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('doctors') }}">Doctors</a>
+        </li>
+  
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('users') }}">Users</a>
+        </li>
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('setting') }}">Setting</a>
+        </li>
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('index') }}">Front</a>
+        </li>
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+        </li>
+
+   
+      </ul>
+  
+    </div>
+  </nav>

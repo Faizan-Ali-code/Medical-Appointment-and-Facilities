@@ -1,0 +1,10 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+{{ ui.page_header('Update Profile', 'Keep your contact details up to date', 'gear') }}
+<div class="card shadow-sm"><div class="card-body p-4">
+  {% include 'account/_profile_form.html' %}
+</div></div>
+{% endblock %}

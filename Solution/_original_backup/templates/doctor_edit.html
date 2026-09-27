@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/admin_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+<blockquote class="blockquote text-center py-5">
+    <h1 class="mb-0 display-4 text-uppercase">Update Doctor</h1>
+    <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+</blockquote>
+
+{% if row %}
+
+
+<div class="card">
+    <div class="card-body">
+        
+<form method="post">
+
+
+    <input type="hidden" name="did" value="{{ doctor_id }}">
+
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" value="{{ row.1 if row else '' }}" required class="form-control">
+    </div>
+
+
+    
+    <div class="form-group">
+        <label for="hospital_id">Doctor Hospital</label>
+        <select name="hospital_id" id="hospital_id" required class="form-control">
+            <option value="{{ row.2 if row else '' }}">Choose</option>
+            {% for hospital in hospitals %}
+            <option value="{{ hospital.id }}">{{ hospital.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div class="form-group">
+        <label for="specialization">Doctor Specialization</label>
+        <input type="text" name="specialization" id="specialization" value="{{ row.3 if row else '' }}" required class="form-control">
+    </div>
+
+
+
+    <div class="form-group">
+        <label for="fee">Doctor Fee</label>
+        <input type="text" name="fee" id="fee" required value="{{ row.4 if row else '' }}" class="form-control">
+    </div>
+
+
+
+
+    <div class="form-group">
+        <label for="slots">Doctor Slots</label>
+        <input type="text" name="slots" id="slots" required value="{{ row.5 if row else '' }}" class="form-control" placeholder="Seperate With Comma e.g. (10:00 AM, 10:10, 10:15)">
+    </div>
+
+
+
+    <div class="form-group">
+        <label for="description">Doctor Description</label>
+        <textarea name="description" id="description" required class="form-control">{{ row.6 if row else '' }}</textarea>
+    </div>  
+
+    
+    <input type="hidden" name="old_image" value="{{ row.7 if row else '' }}">       
+
+
+    <div class="form-group">
+        <label for="image">Doctor Image</label>
+        <input type="file" name="image" id="image" class="form-control">
+    </div>
+    
+
+    <input type="submit" name="submit" value="Update" class="btn btn-dark">
+
+
+</form>
+
+{% if update %}
+<h4 class="alert alert-info">{{ update }}</h4>
+{% endif %}
+
+
+
+{% if message %}
+    <h4 class="alert alert-warning">{{ message }}</h4>
+{% else %}
+
+{% endif %}
+
+
+</div>
+</div>
+
+
+
+
+{% endif %}
+{% endblock %}

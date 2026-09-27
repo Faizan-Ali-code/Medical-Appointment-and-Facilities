@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% set editing = facility.id is not none %}
+{% set f = request.form if request.method == 'POST' else facility %}
+{% block title %}{{ 'Update' if editing else 'Add' }} Facility{% endblock %}
+
+{% block content %}
+{% call ui.page_header(('Update' if editing else 'Add') ~ ' Facility', facility.name if editing else 'Add a lab or test facility', 'clipboard2-pulse') %}
+  <a href="{{ url_for('admin.facilities') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+{% endcall %}
+
+<div class="card shadow-sm"><div class="card-body p-4">
+  <form class="needs-validation" novalidate method="post">
+    {{ ui.csrf_field() }}
+    <div class="row">
+      <div class="col-md-6">{{ ui.field('name', 'Facility Name', f.name) }}</div>
+      <div class="col-md-6">{{ ui.hospital_select(hospitals, f.hospital_id | int if f.hospital_id else None) }}</div>
+      <div class="col-md-6">{{ ui.field('services', 'Services', f.services, placeholder='X-rays, MRI', help='Separate services with commas') }}</div>
+      <div class="col-md-6">{{ ui.field('fee', 'Fees (Rs.)', f.fee, placeholder='1500, 3000', help='One fee per service, same order, separated by commas') }}</div>
+      <div class="col-md-6">{{ ui.field('contact', 'Contact', f.contact, type='tel') }}</div>
+    </div>
+    {{ ui.textarea('description', 'Description', f.description) }}
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check2 me-1"></i>{{ 'Update' if editing else 'Add' }}</button>
+  </form>
+</div></div>
+{% endblock %}

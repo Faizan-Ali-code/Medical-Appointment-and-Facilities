@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/admin_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">Manage Doctors.</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+
+        <table class="table table-bordered table-striped">
+
+            <tr>
+                <th colspan="10">
+                    <form method="POST" action="{{ url_for('doctors') }}" class="form-inline my-2 my-lg-0">
+                        <input class="form-control mr-sm-2" type="search" name="search_query" placeholder="Search Doctors" aria-label="Search">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                    </form>
+                </th>
+            </tr>
+
+            <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Hospital</th>
+                <th>Specialization</th>
+                <th>Fee</th>
+                <th>Slots</th>
+                <th>Image</th>
+                <th>Bookings</th>
+                <th>Edit</th>
+                <th>Remove</th>
+        
+            </tr>
+
+
+
+
+
+        {% if result %}
+            {% for rows in result %}
+            
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ rows[1] }}</td>
+                <td>{{ rows[2] }}</td>
+                <td>{{ rows[3] }}</td>
+                <td>{{ rows[4] }}</td>
+                <td>
+                    {% for slot in rows[5].split(',') %}
+                        <span class="badge badge-primary">{{ slot }}</span><br>
+                    {% endfor %}
+                </td>
+                
+                <td><img src="{{ url_for('static', filename='images/' + rows[6]) }}" width="60" height="60"></td>
+                
+                <td><a href="{{ url_for('docbookings', id=rows[0] ) }}" class="btn btn-info btn-sm">View</a></td>
+                <td><a href="{{ url_for('doctor_edit', id=rows[0] ) }}" class="btn btn-warning btn-sm">Edit</a></td>
+                <td><a href="{{ url_for('doctor_delete', id=rows[0] ) }}" class="btn btn-danger btn-sm">X</a></td>
+            </tr>
+
+            {% endfor %}
+            {% else %}
+            <tr><td>No Record</td></tr>
+        {% endif %}
+        
+
+
+        </table>
+
+{% endblock %}

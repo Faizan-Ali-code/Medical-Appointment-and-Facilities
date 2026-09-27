@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand text-dark" href="#">Medical Appointments & Services</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav ml-auto mr-5">
+  
+          
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('index') }}">Hospitals</a>
+        </li>
+  
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('fdoctors') }}">Doctors</a>
+        </li>
+
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('ffacilities') }}">Facilities</a>
+        </li>
+
+
+        
+        {% if user_id and user_role %}
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('account') }}"> Account </a>
+        </li>
+
+        {% else %}
+
+        <li class="nav-item pl-1">
+          <a class="nav-link" href="{{ url_for('sign_in') }}">Login</a>
+        </li>
+  
+  
+        <li class="nav-item pl-1">
+            <a class="nav-link" href="{{ url_for('sign_up') }}">Register</a>
+        </li>
+        {% endif %}
+
+
+
+       </ul>
+  
+    </div>
+  </nav>

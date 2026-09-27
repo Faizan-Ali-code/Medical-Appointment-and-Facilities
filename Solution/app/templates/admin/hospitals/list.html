@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Manage Hospitals{% endblock %}
+
+{% block content %}
+{% call ui.page_header('Manage Hospitals', ui.plural(page.total, 'hospital'), 'hospital') %}
+  <a href="{{ url_for('admin.add_hospital') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Hospital</a>
+{% endcall %}
+{{ ui.search_form(url_for('admin.hospitals'), 'Search by name or city', term) }}
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th></th><th>Name</th><th>City</th><th>Address</th><th>Phone</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for h in page.items %}
+          <tr>
+            <td>{{ ui.rownum(page, loop) }}</td>
+            <td>{{ ui.image(h.image, h.name, 'thumb rounded') }}</td>
+            <td class="fw-semibold">{{ h.name }}</td>
+            <td>{{ h.city }}</td>
+            <td class="small">{{ h.address | truncate(40) }}</td>
+            <td>{{ h.phone }}</td>
+            <td class="text-end text-nowrap">
+              {{ ui.action_btn(url_for('admin.edit_hospital', id=h.id), 'Edit', 'pencil', 'secondary') }}
+              {{ ui.post_btn(url_for('admin.delete_hospital', id=h.id), 'Delete', 'trash', 'danger',
+                               confirm='Delete this hospital with all its doctors and facilities?') }}
+            </td>
+          </tr>
+        {% else %}
+          {{ ui.empty(colspan=7) }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ ui.pagination(page, 'hospital') }}
+{% endblock %}

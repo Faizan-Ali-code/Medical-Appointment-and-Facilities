@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% if role == 'admin' %}
+{% include "includes/admin_nav.html" %}
+
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">Add Facility</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+
+        <div class="card">
+            <div class="card-body">
+                
+        <form action="{{ url_for('addfacility') }}" method="post">
+            <div class="form-group">
+                <label for="hospital_id">Hospital</label>
+                <select name="hospital_id" id="hospital_id" class="form-control" required>
+                    {% for hospital in hospitals %}
+                        <option value="{{ hospital.id }}">{{ hospital.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <div class="form-group">
+                <label for="name">Facility Name</label>
+                <input type="text" name="name" id="name" required class="form-control">
+            </div>
+        
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea name="description" id="description" rows="3" class="form-control" required></textarea>
+            </div>
+        
+            <div class="form-group">
+                <label for="services">Services (separated by comma)</label>
+                <input type="text" name="services" id="services" required class="form-control">
+            </div>
+        
+            <div class="form-group">
+                <label for="fee">Fees (separated by comma)</label>
+                <input type="text" name="fee" id="fee" required class="form-control">
+            </div>
+        
+            <div class="form-group">
+                <label for="contact">Contact</label>
+                <input type="text" name="contact" id="contact" required class="form-control">
+            </div>
+        
+            <input type="submit" name="submit" value="Add" class="btn btn-dark">
+        </form>
+        
+
+
+{% if message %}
+<h4 class="alert alert-info">{{ message }}</h4>
+{% endif %}
+
+        </div>
+    </div>
+
+{% endblock %}

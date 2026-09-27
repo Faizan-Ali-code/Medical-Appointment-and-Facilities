@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Manage Facilities{% endblock %}
+
+{% block content %}
+{% call ui.page_header('Manage Facilities', ui.plural(page.total, 'facility', 'facilities'), 'clipboard2-pulse') %}
+  <a href="{{ url_for('admin.add_facility') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Facility</a>
+{% endcall %}
+{{ ui.search_form(url_for('admin.facilities'), 'Search by name, service or description', term) }}
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Name</th><th>Hospital</th><th>Services &amp; Fee</th><th>Contact</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for f in page.items %}
+          <tr>
+            <td>{{ ui.rownum(page, loop) }}</td>
+            <td class="fw-semibold">{{ f.name }}</td>
+            <td>{{ f.hospital_name }}</td>
+            <td>{% for service, fee in f.service_fees %}<span class="badge bg-body-tertiary text-body border me-1 mb-1">{{ service }}{% if fee %} &middot; {{ fee }}{% endif %}</span>{% endfor %}</td>
+            <td class="text-nowrap">{{ f.contact }}</td>
+            <td class="text-end text-nowrap">
+              {{ ui.action_btn(url_for('admin.facility_bookings', id=f.id), 'Bookings', 'calendar-check', 'primary') }}
+              {{ ui.action_btn(url_for('admin.edit_facility', id=f.id), 'Edit', 'pencil', 'secondary') }}
+              {{ ui.post_btn(url_for('admin.delete_facility', id=f.id), 'Delete', 'trash', 'danger',
+                               confirm='Delete this facility and its bookings?') }}
+            </td>
+          </tr>
+        {% else %}
+          {{ ui.empty(colspan=6) }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ ui.pagination(page, 'facility', 'facilities') }}
+{% endblock %}

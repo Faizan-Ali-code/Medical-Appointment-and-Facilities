@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "includes/admin_nav.html" %}
+{% endblock %}
+
+
+{% block content %}
+
+
+
+        <blockquote class="blockquote text-center py-5">
+            <h1 class="mb-0 display-4 text-uppercase">Doctor Bookings</h1>
+            <footer class="blockquote-footer">Booking of Medical Appointment</footer>
+        </blockquote>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Doctor</th>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Slot</th>
+                    
+                    <th>Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% if result %}
+                {% for rows in result %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ rows[1] }}</td>
+                    <td>{{ rows[2] }}</td>
+                    <td>{{ rows[3] }}</td>
+                    <td>{{ rows[4] }}</td>
+               
+                    <td><a href="{{ url_for('del_docbookings', id=rows[0] ) }}" class="btn btn-danger btn-sm">X</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="7">No Record</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        
+
+{% endblock %}

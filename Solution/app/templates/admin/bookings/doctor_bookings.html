@@ -1,0 +1,41 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Doctor Bookings{% endblock %}
+
+{% block content %}
+{% call ui.page_header('Doctor Bookings', doctor.name ~ ' · ' ~ doctor.hospital_name, 'calendar-check') %}
+  <a href="{{ url_for('admin.doctors') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+{% endcall %}
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Patient</th><th>Phone</th><th>Date</th><th>Slot</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for b in page.items %}
+          <tr>
+            <td>{{ ui.rownum(page, loop) }}</td>
+            <td class="fw-semibold">{{ b.user.name if b.user else '-' }}</td>
+            <td>{{ b.user.phone if b.user else '-' }}</td>
+            <td class="text-nowrap">{{ b.date | longdate }}</td>
+            <td><span class="badge text-bg-info">{{ b.slot }}</span></td>
+            <td>{{ ui.booking_status_badge(b) }}</td>
+            <td class="text-end text-nowrap">
+              {% if (b.status or 'booked') == 'booked' %}
+                {{ ui.post_btn(url_for('admin.set_doctor_booking_status', id=b.id, status='completed'), 'Completed', 'check2', 'success') }}
+                {{ ui.post_btn(url_for('admin.set_doctor_booking_status', id=b.id, status='cancelled'), 'Cancel', 'x-lg', 'secondary',
+                               confirm='Cancel this appointment?') }}
+              {% endif %}
+              {{ ui.post_btn(url_for('admin.delete_doctor_booking', id=b.id), 'Remove', 'trash', 'danger',
+                             confirm='Remove this booking permanently?') }}
+            </td>
+          </tr>
+        {% else %}
+          {{ ui.empty(colspan=7) }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{{ ui.pagination(page, 'booking') }}
+{% endblock %}

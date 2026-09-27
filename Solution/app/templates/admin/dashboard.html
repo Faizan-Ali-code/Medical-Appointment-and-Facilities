@@ -1,0 +1,83 @@
+{% extends 'layouts/base.html' %}
+{% import 'partials/macros.html' as ui %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% call ui.page_header('Dashboard', 'Overview of hospitals, doctors and bookings', 'speedometer2') %}
+  <div class="dropdown">
+    <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-plus-lg me-1"></i>Add new</button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li><a class="dropdown-item" href="{{ url_for('admin.add_hospital') }}"><i class="bi bi-hospital me-2"></i>Hospital</a></li>
+      <li><a class="dropdown-item" href="{{ url_for('admin.add_doctor') }}"><i class="bi bi-person-badge me-2"></i>Doctor</a></li>
+      <li><a class="dropdown-item" href="{{ url_for('admin.add_facility') }}"><i class="bi bi-clipboard2-pulse me-2"></i>Facility</a></li>
+    </ul>
+  </div>
+{% endcall %}
+
+<div class="row g-3 mb-4">
+  {% for key, label, icon, endpoint in [
+      ('hospitals', 'Hospitals', 'hospital', 'admin.hospitals'),
+      ('doctors', 'Doctors', 'person-badge', 'admin.doctors'),
+      ('facilities', 'Facilities', 'clipboard2-pulse', 'admin.facilities'),
+      ('users', 'Registered users', 'people', 'admin.users'),
+      ('upcoming', 'Upcoming appointments', 'calendar-check', None),
+      ('pending_tests', 'Tests awaiting result', 'hourglass-split', None)] %}
+    <div class="col-6 col-md-4 col-xxl-2">
+      {{ ui.stat_tile(label, counts[key], icon, url_for(endpoint) if endpoint else None) }}
+    </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <div class="col-xxl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-calendar-check me-1"></i>Upcoming appointments</div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Date</th><th>Slot</th><th>Patient</th><th>Doctor</th></tr></thead>
+          <tbody>
+            {% for b in upcoming %}
+              <tr>
+                <td class="text-nowrap">{{ b.date | longdate }}</td>
+                <td><span class="badge text-bg-info">{{ b.slot }}</span></td>
+                <td>{{ b.user.name if b.user else '-' }}</td>
+                <td><a href="{{ url_for('admin.doctor_bookings', id=b.doctor_id) }}">{{ b.doctor.name if b.doctor else '-' }}</a></td>
+              </tr>
+            {% else %}
+              {{ ui.empty('No upcoming appointments', colspan=4, icon='calendar-x') }}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xxl-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header fw-semibold"><i class="bi bi-hourglass-split me-1"></i>Tests awaiting result</div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Date</th><th>Patient</th><th>Facility</th><th>Service</th><th class="text-end">Set result</th></tr></thead>
+          <tbody>
+            {% for b in pending_tests %}
+              <tr>
+                <td class="text-nowrap">{{ b.date | longdate }}</td>
+                <td>{{ b.user.name if b.user else '-' }}</td>
+                <td><a href="{{ url_for('admin.facility_bookings', id=b.facility_id) }}">{{ b.facility.name if b.facility else '-' }}</a></td>
+                <td>{{ b.service }}</td>
+                <td class="text-end text-nowrap">
+                  {{ ui.post_btn(url_for('admin.set_result', id=b.id, result='Positive'), 'Positive', 'plus-circle', 'warning') }}
+                  {{ ui.post_btn(url_for('admin.set_result', id=b.id, result='Negative'), 'Negative', 'dash-circle', 'success') }}
+                </td>
+              </tr>
+            {% else %}
+              {{ ui.empty('All test results are up to date', colspan=5, icon='check2-circle') }}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
