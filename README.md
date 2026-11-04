@@ -1,6 +1,6 @@
 # MediBook: Medical Appointments & Facilities
 
-Flask web app for booking doctor appointments and hospital facility tests such as lab tests and X-rays. Built as a final-year project (CS-619), then refactored into a layered app with a full test suite and security hardening.
+Flask web app for booking doctor appointments and hospital facility tests such as lab tests and X-rays. Built as a final-year project (CS-619), then refactored into a layered app with security hardening.
 
 ## Features
 
@@ -10,7 +10,6 @@ Flask web app for booking doctor appointments and hospital facility tests such a
 - Admin dashboard to manage hospitals, doctors, facilities, users and all bookings
 - Security: hashed passwords, CSRF protection, role checks, safe image uploads and security headers
 - Responsive Bootstrap 5 UI with dark mode
-- 332 automated tests with 100% code coverage
 
 ## How it works
 
@@ -26,34 +25,36 @@ flowchart TD
 
 ## Tech stack
 
-Python · Flask · SQLAlchemy · Flask-WTF · Bootstrap 5 · SQLite or MySQL · pytest
+Python · Flask · SQLAlchemy · Flask-WTF · Bootstrap 5 · SQLite or MySQL
 
 ## Quick start (Windows)
 
 ```bat
 git clone https://github.com/Faizan-Ali-code/Medical-Appointment-and-Facilities.git
-cd Medical-Appointment-and-Facilities\Solution
+cd Medical-Appointment-and-Facilities
 setup.bat
 run.bat
 ```
 
-Open http://127.0.0.1:5000. `setup.bat` creates a virtual environment, a local SQLite database and demo data (20 hospitals, 40 doctors, 24 facilities). Run the tests with `test.bat`.
+Open http://127.0.0.1:5000. `setup.bat` creates a virtual environment, a local SQLite database and demo data (20 hospitals, 40 doctors, 24 facilities).
 
 | Role | Email | Password |
 | --- | --- | --- |
 | Admin | admin@yahoo.com | admin |
 | Patient | user@yahoo.com | user |
 
-To use MySQL instead of SQLite, import `Solution/medicalappointmentsfinal.sql` and set `DATABASE_URL` in `.env` (see `.env.example`).
+To use MySQL instead of SQLite, create an empty database, set `DATABASE_URL` in `.env` (see `.env.example`) and run `setup.bat`.
 
 ## Project structure
 
 ```
-Solution/
-  app/      Flask app: blueprints, services, models, templates, static files
-  tests/    pytest suite
-  docs/     architecture and change notes
-  run.py    starts the server
+app/
+  blueprints/   pages and routes (public, auth, account, bookings, admin)
+  services/     search and booking rules
+  models.py     database models
+  templates/    HTML pages
+  static/       CSS, JavaScript and images
+run.py          starts the server
+setup.bat       one-time setup
+run.bat         starts the app
 ```
-
-More detail: [Solution/README.md](Solution/README.md) and [Solution/docs/ARCHITECTURE.md](Solution/docs/ARCHITECTURE.md).

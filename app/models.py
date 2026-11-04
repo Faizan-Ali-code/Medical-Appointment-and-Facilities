@@ -1,8 +1,8 @@
 """
 Database models.
 
-Table and column names are the same as in medicalappointmentsfinal.sql, so an
-existing MySQL database imported from that dump works without changes.
+Table and column names are the same as in the project's original MySQL dump, so
+an existing database imported from that dump works without changes.
 """
 import datetime
 import hmac

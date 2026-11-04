@@ -1,4 +1,4 @@
-"""Create tables and load the sample data (same data as medicalappointmentsfinal.sql)."""
+"""Create tables and load the sample data (same data as the project's original MySQL dump)."""
 import datetime
 
 import click

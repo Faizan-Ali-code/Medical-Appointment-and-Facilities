@@ -6,9 +6,9 @@ if not exist venv (
     python -m venv venv
 )
 venv\Scripts\python -m pip install --upgrade pip
-venv\Scripts\python -m pip install -r requirements-dev.txt
+venv\Scripts\python -m pip install -r requirements.txt
 if not exist .env copy .env.example .env
-venv\Scripts\python init_db.py
+venv\Scripts\flask --app run init-db
 echo Loading demo hospitals, doctors and facilities...
 venv\Scripts\flask --app run seed-demo
 echo.
