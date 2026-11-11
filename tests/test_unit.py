@@ -36,7 +36,7 @@ def test_hospital_name_fallback():
 
 def test_status_label():
     assert FacilityBooking(status=0).status_label == 'Pending'
-    assert FacilityBooking(status=1).status_label == 'Approved'
+    assert FacilityBooking(status=1).status_label == 'Result ready'
 
 
 def test_is_admin():

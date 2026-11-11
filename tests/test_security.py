@@ -60,8 +60,8 @@ def test_delete_with_page_token_works(csrf_app, rows):
     csrf_login(c, *ADMIN)
     token = token_from(c.get('/hospitals').get_data(as_text=True))
     r = c.post('/hospitals/delete/3', data={'csrf_token': token})
-    assert b'Hospital deleted' in r.data
-    assert rows('SELECT * FROM hospitals') == []
+    assert b'Hospital archived' in r.data
+    assert rows('SELECT archived FROM hospitals')[0]['archived'] == 1
 
 
 def test_booking_with_token_works(csrf_app, rows):

@@ -4,14 +4,17 @@ Online Booking of Medical Appointments & Services.
 Application factory: create_app() builds and configures a Flask app.
 """
 import os
+import secrets
 
 from dotenv import load_dotenv
 from flask import Flask, g, render_template, request, url_for
 
 from .config import BASE_DIR, CONFIGS
-from .extensions import csrf, db
+from .extensions import csrf, db, limiter
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+CDN = 'https://cdn.jsdelivr.net'
 
 
 def create_app(config_name=None, **overrides):
@@ -22,6 +25,7 @@ def create_app(config_name=None, **overrides):
 
     db.init_app(app)
     csrf.init_app(app)
+    limiter.init_app(app)
     _register_blueprints(app)
     _register_hooks(app)
     _register_error_handlers(app)
@@ -37,14 +41,34 @@ def _register_blueprints(app):
         app.register_blueprint(bp)
 
 
+def content_security_policy(nonce):
+    """Scripts and styles only from this site and the pinned CDN files; the one inline script needs the nonce."""
+    return '; '.join((
+        "default-src 'self'",
+        f"script-src 'self' {CDN} 'nonce-{nonce}'",
+        f"style-src 'self' {CDN}",
+        f"font-src 'self' {CDN}",
+        "img-src 'self' data:",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+    ))
+
+
 def _register_hooks(app):
     from .utils.auth import load_current_user
+
+    @app.before_request
+    def make_csp_nonce():
+        g.csp_nonce = secrets.token_urlsafe(16)
 
     app.before_request(load_current_user)
 
     @app.context_processor
-    def inject_user():
-        return {'current_user': g.get('user')}
+    def inject_globals():
+        return {'current_user': g.get('user'), 'csp_nonce': g.get('csp_nonce', '')}
 
     @app.template_filter('longdate')
     def longdate(value):
@@ -62,9 +86,13 @@ def _register_hooks(app):
 
     @app.after_request
     def security_headers(response):
+        response.headers.setdefault('Content-Security-Policy', content_security_policy(g.get('csp_nonce', '')))
         response.headers.setdefault('X-Content-Type-Options', 'nosniff')
         response.headers.setdefault('X-Frame-Options', 'DENY')
         response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+        response.headers.setdefault('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+        if request.is_secure:  # HSTS is only meaningful (and only honoured) over HTTPS
+            response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
         return response
 
 
@@ -89,6 +117,12 @@ def _register_error_handlers(app):
     def too_large(e):
         return render_template('errors/error.html', code=413,
                                message='The uploaded file is too large (max 5 MB).'), 413
+
+    @app.errorhandler(429)
+    def too_many_requests(e):
+        return render_template('errors/error.html', code=429,
+                               message='Too many attempts from your network. Please wait a few minutes and try '
+                                       'again.'), 429
 
     @app.errorhandler(500)
     def server_error(e):

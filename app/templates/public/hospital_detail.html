@@ -28,7 +28,7 @@
 
 <h2 class="h4 mb-3"><i class="bi bi-person-badge text-primary me-2"></i>Hospital Doctors</h2>
 <div class="row g-4 mb-5">
-  {% for d in hospital.doctors %}
+  {% for d in doctors %}
     {% include 'public/_doctor_card.html' %}
   {% else %}
     <div class="col-12">{{ ui.empty() }}</div>
@@ -36,7 +36,7 @@
 </div>
 
 <h2 class="h4 mb-3"><i class="bi bi-clipboard2-pulse text-primary me-2"></i>Hospital's Facilities</h2>
-{% with facilities=hospital.facilities, show_hospital=false %}
+{% with show_hospital=false %}
   {% include 'public/_facility_table.html' %}
 {% endwith %}
 {% endblock %}

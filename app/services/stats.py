@@ -13,7 +13,9 @@ def _count(model, *where):
 
 
 def public_counts():
-    return {'hospitals': _count(Hospital), 'doctors': _count(Doctor), 'facilities': _count(Facility)}
+    return {'hospitals': _count(Hospital, Hospital.archived.is_(False)),
+            'doctors': _count(Doctor, Doctor.archived.is_(False)),
+            'facilities': _count(Facility, Facility.archived.is_(False))}
 
 
 def _is_upcoming():
@@ -25,7 +27,7 @@ def _upcoming(*where, limit):
              .options(selectinload(DoctorBooking.doctor).selectinload(Doctor.hospital),
                       selectinload(DoctorBooking.user))
              .where(_is_upcoming(), *where)
-             .order_by(DoctorBooking.date, DoctorBooking.slot)
+             .order_by(DoctorBooking.date, DoctorBooking.starts_at, DoctorBooking.id)
              .limit(limit))
     return db.session.scalars(query).all()
 
@@ -35,7 +37,7 @@ def admin_overview(limit=8):
     return {
         'counts': {
             **public_counts(),
-            'users': _count(User, User.role == 'user'),
+            'users': _count(User, User.role == 'user', User.archived.is_(False)),
             'upcoming': _count(DoctorBooking, _is_upcoming()),
             'pending_tests': _count(FacilityBooking, pending),
         },

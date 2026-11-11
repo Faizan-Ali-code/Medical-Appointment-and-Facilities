@@ -26,10 +26,11 @@ from app.seed import init_db  # noqa: E402
 TMP_DIR = tempfile.mkdtemp(prefix='cs619-tests-')
 DB_URL = 'sqlite:///' + os.path.join(TMP_DIR, 'test.db')
 UPLOAD_DIR = os.path.join(TMP_DIR, 'uploads')
+PRIVATE_UPLOAD_DIR = os.path.join(TMP_DIR, 'private-uploads')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-USER = ('user@yahoo.com', 'user')
-ADMIN = ('admin@yahoo.com', 'admin')
+USER = ('user@yahoo.com', 'user-pass-1')     # SEED_*_PASSWORD in TestingConfig
+ADMIN = ('admin@yahoo.com', 'admin-pass-1')
 
 
 class Client(FlaskClient):
@@ -40,7 +41,8 @@ class Client(FlaskClient):
         return super().post(*args, **kwargs)
 
 
-_app = create_app('testing', SQLALCHEMY_DATABASE_URI=DB_URL, UPLOAD_FOLDER=UPLOAD_DIR)
+_app = create_app('testing', SQLALCHEMY_DATABASE_URI=DB_URL, UPLOAD_FOLDER=UPLOAD_DIR,
+                  PRIVATE_UPLOAD_FOLDER=PRIVATE_UPLOAD_DIR)
 _app.test_client_class = Client
 _check_engine = sa.create_engine(DB_URL)
 
@@ -86,7 +88,7 @@ def png(name='pic.png'):
     return (io.BytesIO(PNG_BYTES), name)
 
 
-def register(client, email, password='secret1', **extra):
+def register(client, email, password='secret-pass-1', **extra):
     data = {'name': 'Test', 'email': email, 'password': password, 'phone': '1', 'city': 'X'}
     data.update(extra)
     return client.post('/register', data=data)
@@ -110,8 +112,8 @@ def admin_client(app):
 def other_user_client(app):
     """A second normal user (email other@test.com) who has no bookings."""
     c = app.test_client()
-    register(c, 'other@test.com', 'other123')
-    assert login(c, 'other@test.com', 'other123').status_code == 302
+    register(c, 'other@test.com', 'other-pass-1')
+    assert login(c, 'other@test.com', 'other-pass-1').status_code == 302
     return c
 
 
@@ -127,3 +129,8 @@ def rows():
 @pytest.fixture
 def upload_dir():
     return UPLOAD_DIR
+
+
+@pytest.fixture
+def private_upload_dir():
+    return PRIVATE_UPLOAD_DIR

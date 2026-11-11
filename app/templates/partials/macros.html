@@ -47,12 +47,11 @@
 
 {% macro plural(n, word, many=None) -%}{{ n }} {{ word if n == 1 else (many or word ~ 's') }}{%- endmacro %}
 
-{% macro image(filename, alt='', class='', style='') -%}
+{% macro image(filename, alt='', class='') -%}
   {% if filename %}
-    <img src="{{ url_for('static', filename='images/' ~ filename) }}" alt="{{ alt }}" class="{{ class }}"
-         style="{{ style }}" loading="lazy">
+    <img src="{{ url_for('static', filename='images/' ~ filename) }}" alt="{{ alt }}" class="{{ class }}" loading="lazy">
   {% else %}
-    <div class="img-placeholder {{ class }}" style="{{ style }}"><i class="bi bi-image"></i></div>
+    <div class="img-placeholder {{ class }}"><i class="bi bi-image"></i></div>
   {% endif %}
 {%- endmacro %}
 
@@ -167,14 +166,27 @@
   </form>
 {%- endmacro %}
 
-{# Uploaded booking file: thumbnail for images, an icon link for PDFs. #}
-{% macro upload_link(filename) -%}
-  {% if not filename %}-
-  {% elif filename is pdf %}
-    <a href="{{ url_for('static', filename='images/' ~ filename) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
-      <i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+{# Patient file of a facility booking: served by bookings.facility_file (owner or admin only), never as a static URL. #}
+{% macro upload_link(booking) -%}
+  {% if not booking.image %}-
   {% else %}
-    <a href="{{ url_for('static', filename='images/' ~ filename) }}" target="_blank" rel="noopener">
-      {{ image(filename, 'Uploaded file', 'thumb rounded') }}</a>
+    {% set url = url_for('bookings.facility_file', id=booking.id) %}
+    {% if booking.image is pdf %}
+      <a href="{{ url }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+    {% else %}
+      <a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ url }}" alt="Uploaded file" class="thumb rounded" loading="lazy"></a>
+    {% endif %}
   {% endif %}
+{%- endmacro %}
+
+{# Admin: record a test result (free text, e.g. Normal / Positive / Hb 13.2 g/dL). #}
+{% macro result_form(booking, next=None) -%}
+  <form method="post" action="{{ url_for('admin.set_result', id=booking.id) }}" class="d-inline-flex gap-1 needs-validation" novalidate>
+    {{ csrf_field() }}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <input type="text" name="result" class="form-control form-control-sm result-input" maxlength="50" required
+           placeholder="Result" aria-label="Test result" value="{{ booking.result if booking.result != '-' }}">
+    <button type="submit" class="btn btn-sm btn-outline-success" title="Save result" aria-label="Save result">
+      <i class="bi bi-check2"></i></button>
+  </form>
 {%- endmacro %}

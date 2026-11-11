@@ -18,7 +18,7 @@
             <td class="fw-semibold">{{ b.facility.name if b.facility else '-' }}</td>
             <td>{{ b.service }}</td>
             <td>{{ b.date | longdate }}</td>
-            <td>{{ ui.upload_link(b.image) }}</td>
+            <td>{{ ui.upload_link(b) }}</td>
             <td>{{ b.result }}</td>
             <td>{{ ui.status_badge(b) }}</td>
           </tr>

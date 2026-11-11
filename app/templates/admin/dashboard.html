@@ -67,8 +67,7 @@
                 <td><a href="{{ url_for('admin.facility_bookings', id=b.facility_id) }}">{{ b.facility.name if b.facility else '-' }}</a></td>
                 <td>{{ b.service }}</td>
                 <td class="text-end text-nowrap">
-                  {{ ui.post_btn(url_for('admin.set_result', id=b.id, result='Positive'), 'Positive', 'plus-circle', 'warning') }}
-                  {{ ui.post_btn(url_for('admin.set_result', id=b.id, result='Negative'), 'Negative', 'dash-circle', 'success') }}
+                  {{ ui.result_form(b, next=url_for('admin.dashboard')) }}
                 </td>
               </tr>
             {% else %}

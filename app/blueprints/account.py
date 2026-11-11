@@ -1,11 +1,11 @@
 """Logged-in user's own account and profile settings."""
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from ..extensions import db
 from ..services import stats
 from ..utils import form_values
-from ..utils.auth import login_required
-from .auth import password_problem
+from ..utils.auth import VERSION_KEY, end_all_sessions, login_required
+from ..utils.passwords import password_problem
 
 bp = Blueprint('account', __name__)
 
@@ -16,6 +16,7 @@ def update_profile(user):
     """
     Shared by the user's own settings page and the admin's user edit page. Returns True if saved.
     The password field is optional: leave it empty to keep the current password.
+    A new password ends the user's other sessions; the session making the change stays logged in.
     """
     form = form_values(*PROFILE_FIELDS)
     new_password = request.form.get('password', '')
@@ -23,11 +24,14 @@ def update_profile(user):
         flash('Please Fill All The Fields', 'warning')
         return False
     if new_password:
-        problem = password_problem(new_password)
+        problem = password_problem(new_password, user.email, form['name'])
         if problem:
             flash(problem, 'warning')
             return False
         user.set_password(new_password)
+        end_all_sessions(user)
+        if user.id == g.user.id:
+            session[VERSION_KEY] = user.session_version
     for field, value in form.items():
         setattr(user, field, value)
     db.session.commit()

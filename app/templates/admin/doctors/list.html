@@ -25,8 +25,8 @@
             <td class="text-end text-nowrap">
               {{ ui.action_btn(url_for('admin.doctor_bookings', id=d.id), 'Bookings', 'calendar-check', 'primary') }}
               {{ ui.action_btn(url_for('admin.edit_doctor', id=d.id), 'Edit', 'pencil', 'secondary') }}
-              {{ ui.post_btn(url_for('admin.delete_doctor', id=d.id), 'Delete', 'trash', 'danger',
-                               confirm='Delete this doctor and their bookings?') }}
+              {{ ui.post_btn(url_for('admin.delete_doctor', id=d.id), 'Archive', 'archive', 'danger',
+                               confirm='Archive this doctor? They are hidden everywhere; their bookings are kept.') }}
             </td>
           </tr>
         {% else %}

@@ -57,7 +57,7 @@ def test_dashboard_lists_upcoming_and_pending(admin_client, user_client):
 
 
 def test_dashboard_empty_states(admin_client):
-    admin_client.post('/res_positive/1')
+    admin_client.post('/facbookings/1/result', data={'result': 'Positive'})
     html = admin_client.get('/dashboard').get_data(as_text=True)
     assert 'No upcoming appointments' in html
     assert 'All test results are up to date' in html
@@ -89,7 +89,7 @@ def test_past_bookings_are_not_upcoming(user_client):
 
 
 def test_result_shown_in_account(admin_client, user_client):
-    admin_client.post('/res_negitive/1')
+    admin_client.post('/facbookings/1/result', data={'result': 'Negative'})
     assert 'Negative' in user_client.get('/account').get_data(as_text=True)
 
 
@@ -111,7 +111,7 @@ def test_static_assets_served(client, path):
 
 def test_delete_buttons_are_post_forms_with_confirm_dialog(admin_client):
     html = admin_client.get('/hospitals').get_data(as_text=True)
-    assert re.search(r'<form method="post" action="/hospitals/delete/3" class="d-inline"\s+data-confirm="Delete this hospital', html)
+    assert re.search(r'<form method="post" action="/hospitals/delete/3" class="d-inline"\s+data-confirm="Archive this hospital', html)
     assert 'href="/hospitals/delete/3"' not in html
     assert 'onclick=' not in html
 

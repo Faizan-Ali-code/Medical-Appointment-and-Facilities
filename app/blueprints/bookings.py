@@ -1,7 +1,7 @@
-"""Booking a doctor / facility, and the user's own bookings."""
+"""Booking a doctor / facility, the user's own bookings, and access to uploaded patient files."""
 import datetime
 
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, send_from_directory, url_for
 
 from ..extensions import db
 from ..models import Doctor, DoctorBooking, Facility, FacilityBooking
@@ -9,9 +9,15 @@ from ..services import bookings as booking_service
 from ..services import catalog
 from ..services.bookings import BookingError
 from ..utils.auth import login_required
-from ..utils.uploads import IMAGES_AND_PDF, UploadError, save_upload
+from ..utils.uploads import IMAGES_AND_PDF, UploadError, private_file_folder, save_upload
 
 bp = Blueprint('bookings', __name__)
+
+# A patient file is shown on its own (no scripts, no other resources) and never cached.
+FILE_RESPONSE_HEADERS = {
+    'Content-Security-Policy': "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox",
+    'Cache-Control': 'private, no-store',
+}
 
 
 def _can_book():
@@ -27,7 +33,7 @@ def _can_book():
 
 @bp.route('/book_doctor/<int:id>', methods=['GET', 'POST'])
 def book_doctor(id):
-    doctor = db.get_or_404(Doctor, id)
+    doctor = catalog.get_active_or_404(Doctor, id)
     if request.method == 'POST':
         denied = _can_book()
         if denied:
@@ -44,7 +50,7 @@ def book_doctor(id):
 
 @bp.route('/book_facilities/<int:id>', methods=['GET', 'POST'])
 def book_facility(id):
-    facility = db.get_or_404(Facility, id)
+    facility = catalog.get_active_or_404(Facility, id)
     if request.method == 'POST':
         denied = _can_book()
         if denied:
@@ -52,13 +58,29 @@ def book_facility(id):
         service = request.form.get('service', '').strip()
         try:
             booking_service.check_facility_booking(g.user, facility, service)  # before saving the file
-            image = save_upload(request.files.get('image'), allowed=IMAGES_AND_PDF)
+            image = save_upload(request.files.get('image'), allowed=IMAGES_AND_PDF, private=True)
             booking_service.book_facility(g.user, facility, service, image)
             flash('Service Booking Successful', 'success')
         except (BookingError, UploadError) as e:
             flash(str(e), 'danger')
         return redirect(url_for('bookings.book_facility', id=id))
     return render_template('bookings/book_facility.html', facility=facility, today=datetime.date.today())
+
+
+@bp.route('/bookings/files/<int:id>')
+@login_required
+def facility_file(id):
+    """The file a patient uploaded with a facility booking: only for that patient and admins."""
+    booking = db.session.get(FacilityBooking, id)
+    if booking is None or not booking.image or not (g.user.is_admin or booking.user_id == g.user.id):
+        abort(404)  # 404, not 403: do not confirm that someone else's booking exists
+    folder = private_file_folder(booking.image)
+    if folder is None:
+        abort(404)
+    response = send_from_directory(folder, booking.image, as_attachment=booking.image.lower().endswith('.pdf'),
+                                   max_age=0)
+    response.headers.update(FILE_RESPONSE_HEADERS)
+    return response
 
 
 def _own_booking(id):
@@ -69,7 +91,7 @@ def _own_booking(id):
 @login_required
 def my_doctor_bookings():
     query = (db.select(DoctorBooking).filter_by(user_id=g.user.id)
-             .order_by(DoctorBooking.date.desc(), DoctorBooking.id.desc()))
+             .order_by(DoctorBooking.date.desc(), DoctorBooking.starts_at.desc(), DoctorBooking.id.desc()))
     return render_template('bookings/my_doctor_bookings.html', page=catalog.paginate(query))
 
 

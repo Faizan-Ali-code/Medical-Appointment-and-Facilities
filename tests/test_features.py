@@ -53,7 +53,7 @@ def test_demo_data_counts_and_is_idempotent(app, demo, rows, upload_dir):
 
 
 def test_demo_patient_can_login(demo, client):
-    assert login(client, 'patient1@demo.com', 'patient123').status_code == 302
+    assert login(client, 'patient1@demo.com', 'patient-pass-1').status_code == 302
 
 
 def test_demo_images_render(demo, client):
@@ -181,8 +181,9 @@ def test_availability_api(client, user_client):
     user_client.post('/book_doctor/3', data={'date': day, 'slot': '10:10 AM'})
     data = client.get(f'/api/doctors/3/availability?date={day}').get_json()
     assert data['works'] is True and data['past'] is False and data['date'] == day
-    assert data['slots'] == [{'slot': '10:00 AM', 'free': True}, {'slot': '10:10 AM', 'free': False},
-                             {'slot': '10:15 AM', 'free': True}]
+    assert data['slots'] == [{'slot': '10:00 AM', 'free': True, 'passed': False},
+                             {'slot': '10:10 AM', 'free': False, 'passed': False},
+                             {'slot': '10:15 AM', 'free': True, 'passed': False}]
 
 
 def test_availability_api_past_and_non_working(client):
@@ -202,7 +203,7 @@ def test_availability_exclude_only_for_own_booking(user_client, other_user_clien
     user_client.post('/book_doctor/3', data={'date': day, 'slot': '10:00 AM'})
     bid = rows(f"SELECT id FROM doctor_bookings WHERE date = '{day}'")[0]['id']
     own = user_client.get(f'/api/doctors/3/availability?date={day}&exclude={bid}').get_json()
-    assert own['slots'][0] == {'slot': '10:00 AM', 'free': True}
+    assert own['slots'][0] == {'slot': '10:00 AM', 'free': True, 'passed': False}
     assert other_user_client.get(f'/api/doctors/3/availability?date={day}&exclude={bid}').status_code == 404
     assert client.get(f'/api/doctors/3/availability?date={day}&exclude={bid}').status_code == 404
 
@@ -335,10 +336,13 @@ def test_upgrade_schema_adds_missing_columns(tmp_path, monkeypatch):
     monkeypatch.setenv('DATABASE_URL', url)
     app = create_app('testing')
     with app.app_context():
-        assert sorted(upgrade_schema()) == ['doctor_bookings.status', 'doctors.days']
+        assert sorted(upgrade_schema()) == ['doctor_bookings.holds_slot', 'doctor_bookings.starts_at',
+                                            'doctor_bookings.status', 'doctors.archived', 'doctors.days']
         assert upgrade_schema() == []
-        status = db.session.execute(sa.text('SELECT status FROM doctor_bookings')).scalar()
-        assert status == 'booked'  # old rows get the default
+        status, starts_at, holds = db.session.execute(sa.text(
+            'SELECT status, starts_at, holds_slot FROM doctor_bookings')).one()
+        assert status == 'booked' and holds == 1  # old rows get the defaults
+        assert starts_at.startswith('10:00:00')   # backfilled from the slot text
         db.engine.dispose()
 
 

@@ -40,14 +40,16 @@ def facilities():
 
 @bp.route('/detail/<int:id>')
 def hospital_detail(id):
-    hospital = db.get_or_404(Hospital, id)
-    return render_template('public/hospital_detail.html', hospital=hospital)
+    hospital = catalog.get_active_or_404(Hospital, id)
+    return render_template('public/hospital_detail.html', hospital=hospital,
+                           doctors=[d for d in hospital.doctors if not d.archived],
+                           facilities=[f for f in hospital.facilities if not f.archived])
 
 
 @bp.route('/api/doctors/<int:id>/availability')
 def doctor_availability(id):
     """JSON for the booking form: which slots are free on ?date=YYYY-MM-DD."""
-    doctor = db.get_or_404(Doctor, id)
+    doctor = catalog.get_active_or_404(Doctor, id)
     try:
         date = booking_service.parse_date(request.args.get('date'))
     except BookingError as e:

@@ -13,7 +13,7 @@ def test_pages_require_login(client, url):
 def test_account_shows_user_details(user_client):
     r = user_client.get('/account')
     assert r.status_code == 200
-    for text in (b'User Account', b'user@yahoo.com', b'03108899456', b'Islamabad'):
+    for text in (b'User Account', b'user@yahoo.com', b'0300-0000001', b'Islamabad'):
         assert text in r.data
     assert b'Doctor Bookings' in r.data  # user navigation
 
@@ -47,13 +47,13 @@ def test_setting_changes_password(user_client, app):
     from conftest import login
     data = {'name': 'User', 'city': 'X', 'phone': '1', 'password': 'newpass123'}
     assert b'Your Profile Is Updated' in user_client.post('/setting', data=data).data
-    assert login(app.test_client(), 'user@yahoo.com', 'user').status_code == 200  # old password rejected
+    assert login(app.test_client(), 'user@yahoo.com', 'user-pass-1').status_code == 200  # old password rejected
     assert login(app.test_client(), 'user@yahoo.com', 'newpass123').status_code == 302
 
 
 def test_setting_rejects_short_password(user_client):
     r = user_client.post('/setting', data={'name': 'U', 'city': 'X', 'phone': '1', 'password': '123'})
-    assert b'at least 6 characters' in r.data
+    assert b'at least 8 characters' in r.data
 
 
 def test_settings_page_never_shows_password(user_client, rows):
@@ -182,14 +182,14 @@ def _facility_form(service='MRI'):
             'image': png('scan.png')}
 
 
-def test_book_facility_success(user_client, rows, upload_dir):
+def test_book_facility_success(user_client, rows, private_upload_dir):
     import os
     r = user_client.post('/book_facilities/3', data=_facility_form(), follow_redirects=True,
                          content_type='multipart/form-data')
     assert b'Service Booking Successful' in r.data
     saved = rows("SELECT * FROM facility_bookings WHERE service = 'MRI'")
     assert len(saved) == 1 and saved[0]['status'] == 0 and saved[0]['result'] == '-'
-    assert os.path.exists(os.path.join(upload_dir, saved[0]['image']))
+    assert os.path.exists(os.path.join(private_upload_dir, saved[0]['image']))  # not under static/
 
 
 def test_book_facility_with_pdf_report(user_client, rows):
@@ -240,7 +240,7 @@ def test_book_facility_unknown_service(user_client, rows):
 def test_book_facility_can_rebook_after_result(user_client, admin_client, rows):
     user_client.post('/book_facilities/3', data={'service': 'MRI'})
     booking_id = rows("SELECT id FROM facility_bookings WHERE service = 'MRI'")[0]['id']
-    admin_client.post(f'/res_positive/{booking_id}')
+    admin_client.post(f'/facbookings/{booking_id}/result', data={'result': 'Positive'})
     r = user_client.post('/book_facilities/3', data={'service': 'MRI'})
     assert b'Service Booking Successful' in r.data
 

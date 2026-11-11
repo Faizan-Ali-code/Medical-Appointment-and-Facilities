@@ -17,13 +17,12 @@
             <td>{{ ui.rownum(page, loop) }}</td>
             <td class="fw-semibold">{{ b.user.name if b.user else '-' }}</td>
             <td>{{ b.service }}</td>
-            <td>{{ ui.upload_link(b.image) }}</td>
+            <td>{{ ui.upload_link(b) }}</td>
             <td>{{ b.date | longdate }}</td>
             <td>{{ b.result }}</td>
             <td>{{ ui.status_badge(b) }}</td>
             <td class="text-end text-nowrap">
-              {{ ui.post_btn(url_for('admin.set_result', id=b.id, result='Positive'), 'Positive', 'plus-circle', 'warning') }}
-              {{ ui.post_btn(url_for('admin.set_result', id=b.id, result='Negative'), 'Negative', 'dash-circle', 'success') }}
+              {{ ui.result_form(b) }}
               {{ ui.post_btn(url_for('admin.delete_facility_booking', id=b.id), 'Delete', 'trash', 'danger',
                                confirm='Delete this booking?') }}
             </td>

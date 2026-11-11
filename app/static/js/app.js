@@ -78,9 +78,9 @@
           data.slots.forEach(function (s) {
             var option = select.querySelector('option[value="' + CSS.escape(s.slot) + '"]');
             if (!option) return;
-            var usable = s.free && data.works && !data.past;
+            var usable = s.free && !s.passed && data.works && !data.past;
             option.disabled = !usable;
-            option.textContent = labels[s.slot] + (s.free ? '' : ' (booked)');
+            option.textContent = labels[s.slot] + (!s.free ? ' (booked)' : s.passed ? ' (passed)' : '');
             if (usable) free += 1;
             if (!usable && option.selected) select.value = '';
           });

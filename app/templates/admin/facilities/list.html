@@ -23,8 +23,8 @@
             <td class="text-end text-nowrap">
               {{ ui.action_btn(url_for('admin.facility_bookings', id=f.id), 'Bookings', 'calendar-check', 'primary') }}
               {{ ui.action_btn(url_for('admin.edit_facility', id=f.id), 'Edit', 'pencil', 'secondary') }}
-              {{ ui.post_btn(url_for('admin.delete_facility', id=f.id), 'Delete', 'trash', 'danger',
-                               confirm='Delete this facility and its bookings?') }}
+              {{ ui.post_btn(url_for('admin.delete_facility', id=f.id), 'Archive', 'archive', 'danger',
+                               confirm='Archive this facility? It is hidden everywhere; its bookings are kept.') }}
             </td>
           </tr>
         {% else %}

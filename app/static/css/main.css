@@ -68,3 +68,6 @@ td.empty-state { background: transparent; }
 .quick-link { color: var(--bs-body-color); transition: background-color .15s ease; }
 .quick-link:hover { background: var(--bs-primary-bg-subtle); }
 .navbar [data-theme-toggle] { border: 0; }
+
+/* admin: test result input next to its save button */
+.result-input { width: 9rem; }

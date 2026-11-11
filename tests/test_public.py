@@ -8,7 +8,7 @@ def test_home_lists_hospitals(client):
     r = client.get('/')
     assert r.status_code == 200
     assert b'General Hospital' in r.data
-    assert b'lahore-general-hos-1.jpg' in r.data
+    assert b'sample-hospital.svg' in r.data
 
 
 @pytest.mark.parametrize('query', ['General', 'general', 'Lahore'])
@@ -87,7 +87,7 @@ def test_facilities_empty_search_shows_all(client):
 def test_hospital_detail_shows_doctors_and_facilities(client):
     r = client.get('/detail/3')
     assert r.status_code == 200
-    for text in (b'General Hospital', b'04299268801', b'Sadaf', b'Radiance Imaging Center'):
+    for text in (b'General Hospital', b'042-0000-0003', b'Sadaf', b'Radiance Imaging Center'):
         assert text in r.data
 
 
@@ -158,6 +158,6 @@ def test_facility_services_are_paired_with_fees(client):
 
 
 def test_static_images_served(client):
-    r = client.get('/static/images/doct.jpg')
+    r = client.get('/static/images/sample-doctor.svg')
     assert r.status_code == 200
     r.close()

@@ -12,6 +12,7 @@ import datetime
 import html
 import os
 import random
+import secrets
 
 from flask import current_app
 
@@ -19,7 +20,11 @@ from .extensions import db
 from .models import Doctor, DoctorBooking, Facility, FacilityBooking, Hospital, User
 
 DEMO_MARKER = 'Crescent Care Hospital'   # first demo hospital; if it exists, demo data is already loaded
-DEMO_PASSWORD = 'patient123'
+
+
+def demo_password():
+    """DEMO_PATIENT_PASSWORD from the config, else a random one (printed in the summary)."""
+    return current_app.config.get('DEMO_PATIENT_PASSWORD') or secrets.token_urlsafe(9)
 
 # (name, city, area code, short description)
 HOSPITALS = [
@@ -146,6 +151,7 @@ def load_demo():
         return 'Demo data is already loaded.'
 
     rng = random.Random(619)  # same data every time
+    password = demo_password()
     folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'demo')
     os.makedirs(folder, exist_ok=True)
 
@@ -193,7 +199,7 @@ def load_demo():
                                             start=1):
         user = User(name=f'{first} {last}', email=f'patient{i}@demo.com', phone=f'0300-000000{i}',
                     city=city, role='user')
-        user.set_password(DEMO_PASSWORD)
+        user.set_password(password)
         patients.append(user)
     db.session.add_all(patients)
     db.session.flush()
@@ -225,4 +231,4 @@ def load_demo():
 
     db.session.commit()
     return (f'Demo data loaded: {len(hospitals)} hospitals, {len(doctors)} doctors, {len(facilities)} facilities, '
-            f'{len(patients)} patients (password: {DEMO_PASSWORD}), plus sample bookings.')
+            f'{len(patients)} patients (patient1@demo.com ... password: {password}), plus sample bookings.')

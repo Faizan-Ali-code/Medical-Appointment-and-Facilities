@@ -2,7 +2,9 @@
 Admin area: manage hospitals, doctors, facilities, users and bookings.
 
 Every route in this blueprint requires an admin (see `guard`). Add and edit
-share one view function and one template per entity.
+share one view function and one template per entity. "Delete" archives
+hospitals, doctors, facilities and users (they disappear from every list) so
+that patients' booking history is never lost.
 """
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 
@@ -12,7 +14,8 @@ from ..services import bookings as booking_service
 from ..services import catalog, stats
 from ..services.bookings import BookingError
 from ..utils import form_values, safe_next, search_term
-from ..utils.auth import admin_required
+from ..utils.auth import admin_required, end_all_sessions
+from ..utils.timeslots import format_slot, parse_slot, sort_key
 from ..utils.uploads import UploadError, save_upload
 from .account import update_profile
 
@@ -25,10 +28,11 @@ def guard():
     """Runs before every admin route; admin_required redirects non-admins."""
 
 
-def _save(obj, fields, duplicate_query, messages, image_required=False, extra=None):
+def _save(obj, fields, duplicate_query, messages, image_required=False, extra=None, clean=None):
     """
     Shared add/edit logic. Returns True when the object was saved.
-    `duplicate_query` finds another row that would clash with this one (or None).
+    `duplicate_query` finds another active row that would clash with this one (or None).
+    `clean(form)` may normalise the form values in place and returns an error message or None.
     """
     is_new = obj.id is None
     form = form_values(*fields)
@@ -36,10 +40,15 @@ def _save(obj, fields, duplicate_query, messages, image_required=False, extra=No
         flash('Please Fill All The Fields', 'warning')
         return False
     if 'hospital_id' in form:
-        if not form['hospital_id'].isdigit() or db.session.get(Hospital, int(form['hospital_id'])) is None:
+        hospital = db.session.get(Hospital, int(form['hospital_id'])) if form['hospital_id'].isdigit() else None
+        if hospital is None or hospital.archived:
             flash('Please choose a hospital', 'warning')
             return False
         form['hospital_id'] = int(form['hospital_id'])
+    problem = clean(form) if clean else None
+    if problem:
+        flash(problem, 'warning')
+        return False
     duplicate = db.session.scalar(duplicate_query(form))
     if duplicate is not None and duplicate is not obj:
         flash(messages['duplicate'], 'danger')
@@ -67,6 +76,40 @@ def _save(obj, fields, duplicate_query, messages, image_required=False, extra=No
     return True
 
 
+# ------------------------------------------------------------ form value checks
+
+def _is_amount(text):
+    try:
+        return float(text) >= 0
+    except ValueError:
+        return False
+
+
+def clean_doctor(form):
+    """Slots must be times (stored as '09:30 AM', in time order, no repeats); the fee must be a number."""
+    slots = [s.strip() for s in form['slots'].split(',') if s.strip()]
+    parsed = [parse_slot(s) for s in slots]
+    if not slots or None in parsed:
+        bad = ', '.join(s for s, p in zip(slots, parsed) if p is None) or '(none)'
+        return f'Time slots must be times such as 09:30 AM or 14:30, separated by commas. Not understood: {bad}'
+    form['slots'] = ', '.join(sorted({format_slot(p) for p in parsed}, key=sort_key))
+    if not _is_amount(form['fee']):
+        return 'The fee must be a number (e.g. 1500).'
+    return None
+
+
+def clean_facility(form):
+    """One fee per service, every fee a number."""
+    services = [s.strip() for s in form['services'].split(',') if s.strip()]
+    fees = [f.strip() for f in form['fee'].split(',') if f.strip()]
+    if len(services) != len(fees):
+        return f'Enter one fee per service: {len(services)} service(s) but {len(fees)} fee(s).'
+    if not all(_is_amount(f) for f in fees):
+        return 'Every fee must be a number (e.g. 1500, 800).'
+    form['services'], form['fee'] = ', '.join(services), ', '.join(fees)
+    return None
+
+
 # ------------------------------------------------------------ dashboard
 
 @bp.route('/dashboard')
@@ -91,10 +134,10 @@ def hospitals():
 @bp.route('/addhospital', methods=['GET', 'POST'], endpoint='add_hospital')
 @bp.route('/hospitals/edit/<int:id>', methods=['GET', 'POST'], endpoint='edit_hospital')
 def hospital_form(id=None):
-    hospital = db.get_or_404(Hospital, id) if id else Hospital()
+    hospital = catalog.get_active_or_404(Hospital, id) if id else Hospital()
     if request.method == 'POST':
         saved = _save(hospital, HOSPITAL_FIELDS,
-                      lambda f: db.select(Hospital).filter_by(name=f['name']),
+                      lambda f: db.select(Hospital).filter_by(name=f['name'], archived=False),
                       HOSPITAL_MESSAGES, image_required=True)
         if saved:
             return redirect(url_for('admin.hospitals'))
@@ -103,9 +146,9 @@ def hospital_form(id=None):
 
 @bp.route('/hospitals/delete/<int:id>', methods=['POST'])
 def delete_hospital(id):
-    db.session.delete(db.get_or_404(Hospital, id))
+    catalog.get_active_or_404(Hospital, id).archive()
     db.session.commit()
-    flash('Hospital deleted (with its doctors and facilities)', 'info')
+    flash('Hospital archived with its doctors and facilities; their bookings are kept', 'info')
     return redirect(url_for('admin.hospitals'))
 
 
@@ -131,11 +174,12 @@ def doctors():
 @bp.route('/add_doctor', methods=['GET', 'POST'], endpoint='add_doctor')
 @bp.route('/doctors/edit/<int:id>', methods=['GET', 'POST'], endpoint='edit_doctor')
 def doctor_form(id=None):
-    doctor = db.get_or_404(Doctor, id) if id else Doctor()
+    doctor = catalog.get_active_or_404(Doctor, id) if id else Doctor()
     if request.method == 'POST':
         saved = _save(doctor, DOCTOR_FIELDS,
-                      lambda f: db.select(Doctor).filter_by(name=f['name'], hospital_id=f['hospital_id']),
-                      DOCTOR_MESSAGES, image_required=True, extra=_set_days)
+                      lambda f: db.select(Doctor).filter_by(name=f['name'], hospital_id=f['hospital_id'],
+                                                            archived=False),
+                      DOCTOR_MESSAGES, image_required=True, extra=_set_days, clean=clean_doctor)
         if saved:
             return redirect(url_for('admin.doctors'))
     return render_template('admin/doctors/form.html', doctor=doctor, hospitals=catalog.hospital_choices(),
@@ -144,9 +188,9 @@ def doctor_form(id=None):
 
 @bp.route('/doctors/delete/<int:id>', methods=['POST'])
 def delete_doctor(id):
-    db.session.delete(db.get_or_404(Doctor, id))
+    catalog.get_active_or_404(Doctor, id).archived = True
     db.session.commit()
-    flash('Doctor deleted', 'info')
+    flash('Doctor archived; their bookings are kept', 'info')
     return redirect(url_for('admin.doctors'))
 
 
@@ -167,11 +211,12 @@ def facilities():
 @bp.route('/addfacility', methods=['GET', 'POST'], endpoint='add_facility')
 @bp.route('/facilities/edit/<int:id>', methods=['GET', 'POST'], endpoint='edit_facility')
 def facility_form(id=None):
-    facility = db.get_or_404(Facility, id) if id else Facility()
+    facility = catalog.get_active_or_404(Facility, id) if id else Facility()
     if request.method == 'POST':
         saved = _save(facility, FACILITY_FIELDS,
-                      lambda f: db.select(Facility).filter_by(name=f['name'], hospital_id=f['hospital_id']),
-                      FACILITY_MESSAGES)
+                      lambda f: db.select(Facility).filter_by(name=f['name'], hospital_id=f['hospital_id'],
+                                                              archived=False),
+                      FACILITY_MESSAGES, clean=clean_facility)
         if saved:
             return redirect(url_for('admin.facilities'))
     return render_template('admin/facilities/form.html', facility=facility,
@@ -180,9 +225,9 @@ def facility_form(id=None):
 
 @bp.route('/facilities/delete/<int:id>', methods=['POST'])
 def delete_facility(id):
-    db.session.delete(db.get_or_404(Facility, id))
+    catalog.get_active_or_404(Facility, id).archived = True
     db.session.commit()
-    flash('Facility deleted', 'info')
+    flash('Facility archived; its bookings are kept', 'info')
     return redirect(url_for('admin.facilities'))
 
 
@@ -197,7 +242,7 @@ def users():
 
 @bp.route('/user_edit/<int:id>', methods=['GET', 'POST'])
 def edit_user(id):
-    user = db.get_or_404(User, id)
+    user = catalog.get_active_or_404(User, id)
     if request.method == 'POST' and update_profile(user):
         flash('Congrats, Your User Is Updated', 'success')
         return redirect(url_for('admin.users'))
@@ -206,13 +251,14 @@ def edit_user(id):
 
 @bp.route('/user_delete/<int:id>', methods=['POST'])
 def delete_user(id):
-    user = db.get_or_404(User, id)
+    user = catalog.get_active_or_404(User, id)
     if user.id == g.user.id:
         flash('You cannot delete your own account.', 'danger')
         return redirect(url_for('admin.users'))
-    db.session.delete(user)
+    user.archived = True
+    end_all_sessions(user)  # logged out everywhere, and login is refused from now on
     db.session.commit()
-    flash('User deleted (with their bookings)', 'info')
+    flash('User account closed; their bookings are kept', 'info')
     return redirect(url_for('admin.users'))
 
 
@@ -221,7 +267,8 @@ def delete_user(id):
 @bp.route('/docbookings/<int:id>')
 def doctor_bookings(id):
     doctor = db.get_or_404(Doctor, id)
-    query = db.select(DoctorBooking).filter_by(doctor_id=id).order_by(DoctorBooking.date.desc(), DoctorBooking.slot)
+    query = (db.select(DoctorBooking).filter_by(doctor_id=id)
+             .order_by(DoctorBooking.date.desc(), DoctorBooking.starts_at, DoctorBooking.id))
     return render_template('admin/bookings/doctor_bookings.html', doctor=doctor, page=catalog.paginate(query))
 
 
@@ -257,13 +304,15 @@ def facility_bookings(id):
                            page=catalog.paginate(query))
 
 
-@bp.route('/res_positive/<int:id>', methods=['POST'], defaults={'result': 'Positive'})
-@bp.route('/res_negitive/<int:id>', methods=['POST'], defaults={'result': 'Negative'})
-def set_result(id, result):
+@bp.route('/facbookings/<int:id>/result', methods=['POST'])
+def set_result(id):
     booking = db.get_or_404(FacilityBooking, id)
-    booking_service.set_result(booking, result)
-    flash(f'Result set to {result}', 'success')
-    return redirect(url_for('admin.facility_bookings', id=booking.facility_id))
+    try:
+        booking_service.set_result(booking, request.form.get('result'))
+        flash(f'Result saved: {booking.result}', 'success')
+    except BookingError as e:
+        flash(str(e), 'danger')
+    return redirect(safe_next(url_for('admin.facility_bookings', id=booking.facility_id)))
 
 
 @bp.route('/del_facbookings/<int:id>', methods=['POST'])

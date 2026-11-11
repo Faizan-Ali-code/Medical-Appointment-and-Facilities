@@ -23,8 +23,8 @@
             <td>{{ h.phone }}</td>
             <td class="text-end text-nowrap">
               {{ ui.action_btn(url_for('admin.edit_hospital', id=h.id), 'Edit', 'pencil', 'secondary') }}
-              {{ ui.post_btn(url_for('admin.delete_hospital', id=h.id), 'Delete', 'trash', 'danger',
-                               confirm='Delete this hospital with all its doctors and facilities?') }}
+              {{ ui.post_btn(url_for('admin.delete_hospital', id=h.id), 'Archive', 'archive', 'danger',
+                               confirm='Archive this hospital with its doctors and facilities? Their bookings are kept.') }}
             </td>
           </tr>
         {% else %}

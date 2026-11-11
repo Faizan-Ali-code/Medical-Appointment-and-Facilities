@@ -3,6 +3,7 @@ import io
 
 import pytest
 
+from conftest import USER, login
 from conftest import png as img
 
 ADMIN_ONLY_GET = ['/addhospital', '/addfacility', '/add_doctor', '/hospitals/edit/3',
@@ -10,7 +11,7 @@ ADMIN_ONLY_GET = ['/addhospital', '/addfacility', '/add_doctor', '/hospitals/edi
 ADMIN_ONLY_DELETE = ['/hospitals/delete/3', '/doctors/delete/3', '/facilities/delete/3']
 # every URL that changes data: POST only (a GET link can be triggered by another website)
 POST_ONLY = ADMIN_ONLY_DELETE + ['/user_delete/1', '/del_docbookings/1', '/del_facbookings/1',
-                                 '/res_positive/1', '/res_negitive/1', '/deluser_docbookings/1', '/logout']
+                                 '/facbookings/1/result', '/deluser_docbookings/1', '/logout']
 
 
 # ------------------------------------------------------------ access control
@@ -170,25 +171,47 @@ def test_edit_hospital_form_has_file_upload(admin_client):
 
 
 def test_edit_hospital_keeps_old_image(admin_client, rows):
-    data = {**HOSPITAL, 'hid': '3', 'old_image': 'lahore-general-hos-1.jpg'}
+    data = {**HOSPITAL, 'hid': '3', 'old_image': 'sample-hospital.svg'}
     r = admin_client.post('/hospitals/edit/3', data=data)
     assert b'Hospital Info is Updated' in r.data
     saved = rows('SELECT * FROM hospitals WHERE id = 3')[0]
-    assert saved['name'] == 'City Hospital' and saved['image'] == 'lahore-general-hos-1.jpg'
+    assert saved['name'] == 'City Hospital' and saved['image'] == 'sample-hospital.svg'
 
 
 def test_edit_hospital_with_new_image(admin_client, rows):
     data = {**HOSPITAL, 'image': img('new.png')}
     admin_client.post('/hospitals/edit/3', data=data, content_type='multipart/form-data')
     image = rows('SELECT image FROM hospitals WHERE id = 3')[0]['image']
-    assert image != 'lahore-general-hos-1.jpg' and image.endswith('.png')
+    assert image != 'sample-hospital.svg' and image.endswith('.png')
 
 
-def test_delete_hospital_also_deletes_its_doctors_facilities_and_bookings(admin_client, rows):
+def test_delete_hospital_archives_it_and_keeps_bookings(admin_client, client, rows):
     r = admin_client.post('/hospitals/delete/3', follow_redirects=False)
     assert r.status_code == 302
-    for table in ('hospitals', 'doctors', 'facilities', 'doctor_bookings', 'facility_bookings'):
-        assert rows(f'SELECT * FROM {table}') == [], table
+    for table in ('hospitals', 'doctors', 'facilities'):
+        assert [row['archived'] for row in rows(f'SELECT archived FROM {table}')] == [1], table
+    assert len(rows('SELECT * FROM doctor_bookings')) == 1 and len(rows('SELECT * FROM facility_bookings')) == 1
+    assert b'General Hospital' not in client.get('/').data
+    for url in ('/detail/3', '/book_doctor/3', '/book_facilities/3', '/api/doctors/3/availability?date=2030-01-07'):
+        assert client.get(url).status_code == 404, url
+    assert b'General Hospital' not in admin_client.get('/hospitals').data
+    assert admin_client.get('/hospitals/edit/3').status_code == 404
+    assert admin_client.post('/hospitals/delete/3').status_code == 404
+
+
+def test_archived_hospital_is_not_offered_for_new_doctors(admin_client, rows):
+    admin_client.post('/hospitals/delete/3')
+    r = admin_client.post('/add_doctor', data={**DOCTOR, 'image': img()}, content_type='multipart/form-data')
+    assert b'Please choose a hospital' in r.data
+    assert len(rows('SELECT * FROM doctors')) == 1
+
+
+def test_archived_hospital_name_can_be_reused(admin_client, rows):
+    admin_client.post('/hospitals/delete/3')
+    r = admin_client.post('/addhospital', data={**HOSPITAL, 'name': 'General Hospital', 'image': img()},
+                          content_type='multipart/form-data')
+    assert b'Congrats, Hospital Is Added' in r.data
+    assert len(rows("SELECT * FROM hospitals WHERE name = 'General Hospital'")) == 2
 
 
 # ------------------------------------------------------------ doctors
@@ -254,29 +277,55 @@ def test_add_doctor_invalid_hospital(admin_client, rows, hospital_id):
     assert len(rows('SELECT * FROM doctors')) == 1
 
 
-def test_delete_doctor_also_deletes_its_bookings(admin_client, rows):
+def test_delete_doctor_archives_and_keeps_bookings(admin_client, client, rows):
     admin_client.post('/doctors/delete/3')
-    assert rows('SELECT * FROM doctor_bookings') == []
+    assert rows('SELECT archived FROM doctors WHERE id = 3')[0]['archived'] == 1
+    assert len(rows('SELECT * FROM doctor_bookings')) == 1
+    assert b'Sadaf' not in client.get('/fdoctors').data
+    assert b'Sadaf' in admin_client.get('/docbookings/3').data  # history still reachable for the admin
 
 
 def test_edit_doctor(admin_client, rows):
-    data = {**DOCTOR, 'did': '3', 'old_image': 'wp10434441.png'}
+    data = {**DOCTOR, 'did': '3', 'old_image': 'sample-doctor.svg'}
     r = admin_client.post('/doctors/edit/3', data=data)
     assert b'Doctor Info is Updated' in r.data
     saved = rows('SELECT * FROM doctors WHERE id = 3')[0]
-    assert saved['name'] == 'Dr Ahmed' and saved['image'] == 'wp10434441.png'
+    assert saved['name'] == 'Dr Ahmed' and saved['image'] == 'sample-doctor.svg'
+    assert saved['slots'] == '09:00 AM, 09:30 AM'
+
+
+@pytest.mark.parametrize('slots,stored', [
+    ('2:30 pm, 9:00 AM, 14:30', '09:00 AM, 02:30 PM'),   # normalised, sorted, duplicates merged
+    ('10:00 AM', '10:00 AM'),
+])
+def test_doctor_slots_are_normalised(admin_client, rows, slots, stored):
+    admin_client.post('/doctors/edit/3', data={**DOCTOR, 'slots': slots})
+    assert rows('SELECT slots FROM doctors WHERE id = 3')[0]['slots'] == stored
+
+
+@pytest.mark.parametrize('field,value,message', [
+    ('slots', '9am-ish, 10:00 AM', b'Not understood: 9am-ish'),
+    ('slots', ' , ', b'Not understood: (none)'),
+    ('fee', 'free', b'The fee must be a number'),
+    ('fee', '-5', b'The fee must be a number'),
+])
+def test_doctor_form_rejects_bad_slots_and_fees(admin_client, rows, field, value, message):
+    r = admin_client.post('/doctors/edit/3', data={**DOCTOR, field: value})
+    assert message in r.data
+    assert rows('SELECT name FROM doctors WHERE id = 3')[0]['name'] == 'Sadaf'
 
 
 def test_edit_doctor_with_new_image(admin_client, rows):
     data = {**DOCTOR, 'image': img('d.png')}
     admin_client.post('/doctors/edit/3', data=data, content_type='multipart/form-data')
     image = rows('SELECT image FROM doctors WHERE id = 3')[0]['image']
-    assert image != 'wp10434441.png' and image.endswith('.png')
+    assert image != 'sample-doctor.svg' and image.endswith('.png')
 
 
 def test_delete_doctor(admin_client, rows):
     assert admin_client.post('/doctors/delete/3', follow_redirects=False).status_code == 302
-    assert rows('SELECT * FROM doctors') == []
+    assert rows('SELECT * FROM doctors WHERE archived = 0') == []
+    assert b'Sadaf' not in admin_client.get('/doctors').data
 
 
 # ------------------------------------------------------------ facilities
@@ -327,9 +376,27 @@ def test_edit_facility(admin_client, rows):
     assert rows('SELECT name FROM facilities WHERE id = 3')[0]['name'] == 'City Lab'
 
 
-def test_delete_facility(admin_client, rows):
+def test_delete_facility(admin_client, client, rows):
     assert admin_client.post('/facilities/delete/3', follow_redirects=False).status_code == 302
-    assert rows('SELECT * FROM facilities') == []
+    assert rows('SELECT * FROM facilities WHERE archived = 0') == []
+    assert len(rows('SELECT * FROM facility_bookings')) == 1
+    assert b'Radiance' not in client.get('/ffacilities').data
+
+
+@pytest.mark.parametrize('services,fees,message', [
+    ('CBC, LFT', '500', b'2 service(s) but 1 fee(s)'),
+    ('CBC, LFT', '500, cheap', b'Every fee must be a number'),
+])
+def test_facility_form_needs_one_numeric_fee_per_service(admin_client, rows, services, fees, message):
+    r = admin_client.post('/addfacility', data={**FACILITY, 'services': services, 'fee': fees})
+    assert message in r.data
+    assert len(rows('SELECT * FROM facilities')) == 1
+
+
+def test_facility_services_and_fees_are_tidied(admin_client, rows):
+    admin_client.post('/facilities/edit/3', data={**FACILITY, 'services': 'CBC ,LFT,', 'fee': ' 500,900 '})
+    saved = rows('SELECT services, fee FROM facilities WHERE id = 3')[0]
+    assert saved == {'services': 'CBC, LFT', 'fee': '500, 900'}
 
 
 # ------------------------------------------------------------ users
@@ -378,7 +445,8 @@ def test_user_edit_empty_field(admin_client, rows):
 
 def test_user_delete(admin_client, rows):
     assert admin_client.post('/user_delete/1', follow_redirects=False).status_code == 302
-    assert rows('SELECT * FROM users WHERE id = 1') == []
+    assert rows('SELECT archived FROM users WHERE id = 1')[0]['archived'] == 1
+    assert admin_client.get('/user_edit/1').status_code == 404
 
 
 # ------------------------------------------------------------ doctor bookings
@@ -390,11 +458,12 @@ def test_doctor_bookings_list(admin_client):
         assert text in r.data
 
 
-def test_delete_user_also_deletes_their_bookings(admin_client, rows):
+def test_closed_account_keeps_bookings_and_cannot_login(admin_client, app, rows):
     admin_client.post('/user_delete/1')
-    assert rows('SELECT * FROM doctor_bookings') == []
-    assert rows('SELECT * FROM facility_bookings') == []
-    assert b'No Record' in admin_client.get('/docbookings/3').data
+    assert len(rows('SELECT * FROM doctor_bookings')) == 1 and len(rows('SELECT * FROM facility_bookings')) == 1
+    assert b'user@yahoo.com' not in admin_client.get('/users').data
+    r = login(app.test_client(), *USER)
+    assert r.status_code == 200 and b'Email or Password is Incorrect' in r.data
 
 
 def test_deleted_user_is_logged_out(admin_client, user_client):
@@ -413,23 +482,35 @@ def test_delete_doctor_booking(admin_client, rows):
 def test_facility_bookings_list(admin_client):
     r = admin_client.get('/facbookings/3')
     assert r.status_code == 200
-    for text in (b'User', b'chest-xray.jpg', b'01 August, 2023', b'Pending'):
+    for text in (b'User', b'X-rays', b'01 August, 2023', b'Pending', b'name="result"'):
         assert text in r.data
 
 
-@pytest.mark.parametrize('url,result', [('/res_positive/1', 'Positive'), ('/res_negitive/1', 'Negative')])
-def test_set_test_result(admin_client, rows, url, result):
-    r = admin_client.post(url, follow_redirects=False)
+@pytest.mark.parametrize('result', ['Positive', 'Negative', 'Hb 13.2 g/dL'])
+def test_set_test_result(admin_client, rows, result):
+    r = admin_client.post('/facbookings/1/result', data={'result': f'  {result} '}, follow_redirects=False)
     assert r.status_code == 302 and r.headers['Location'].endswith('/facbookings/3')
     saved = rows('SELECT * FROM facility_bookings WHERE id = 1')[0]
     assert saved['result'] == result and saved['status'] == 1
-    assert b'Approved' in admin_client.get('/facbookings/3').data
+    assert b'Result ready' in admin_client.get('/facbookings/3').data
+
+
+@pytest.mark.parametrize('result,message', [('', b'Please enter a result'), ('x' * 51, b'at most 50 characters')])
+def test_set_test_result_is_validated(admin_client, rows, result, message):
+    assert message in admin_client.post('/facbookings/1/result', data={'result': result}).data
+    assert rows('SELECT status FROM facility_bookings WHERE id = 1')[0]['status'] == 0
+
+
+def test_set_test_result_from_dashboard_returns_there(admin_client):
+    r = admin_client.post('/facbookings/1/result', data={'result': 'Normal', 'next': '/dashboard'},
+                          follow_redirects=False)
+    assert r.headers['Location'].endswith('/dashboard')
 
 
 def test_result_visible_to_user(admin_client, user_client):
-    admin_client.post('/res_positive/1')
+    admin_client.post('/facbookings/1/result', data={'result': 'Positive'})
     r = user_client.get('/user_facbookings')
-    assert b'Positive' in r.data and b'Approved' in r.data
+    assert b'Positive' in r.data and b'Result ready' in r.data
 
 
 def test_delete_facility_booking(admin_client, rows):
@@ -444,8 +525,8 @@ def test_guest_cannot_open_management_pages(client, url):
     assert b'Login Form' in client.get(url, follow_redirects=True).data
 
 
-@pytest.mark.parametrize('url', ['/user_delete/1', '/del_docbookings/1', '/del_facbookings/1', '/res_positive/1',
-                                 '/res_negitive/1', '/deluser_docbookings/1'])
+@pytest.mark.parametrize('url', ['/user_delete/1', '/del_docbookings/1', '/del_facbookings/1',
+                                 '/facbookings/1/result', '/deluser_docbookings/1'])
 def test_guest_cannot_use_management_actions(client, rows, url):
     assert b'Login Form' in client.post(url).data
     assert len(rows('SELECT * FROM doctor_bookings')) == 1

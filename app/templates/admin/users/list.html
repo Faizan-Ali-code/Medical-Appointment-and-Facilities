@@ -20,8 +20,8 @@
             <td>{{ u.city }}</td>
             <td class="text-end text-nowrap">
               {{ ui.action_btn(url_for('admin.edit_user', id=u.id), 'Edit', 'pencil', 'secondary') }}
-              {{ ui.post_btn(url_for('admin.delete_user', id=u.id), 'Delete', 'trash', 'danger',
-                               confirm='Delete this user and all their bookings?') }}
+              {{ ui.post_btn(url_for('admin.delete_user', id=u.id), 'Close account', 'person-x', 'danger',
+                               confirm='Close this account? The user can no longer log in; their bookings are kept.') }}
             </td>
           </tr>
         {% else %}
