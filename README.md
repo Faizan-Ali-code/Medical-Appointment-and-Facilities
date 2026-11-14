@@ -88,6 +88,20 @@ coverage of `app/` drops below 100% (`pyproject.toml`). GitHub Actions runs the 
 | Original group final-year project (single 1,318-line `index.py`, plain-text passwords) | git tag [`v1-original-fyp`](https://github.com/Faizan-Ali-code/Medical-Appointment-and-Facilities/tree/v1-original-fyp/Solution/_original_backup), folder `Solution/_original_backup/` |
 | Steps 1–7: environment, test suite, architecture, UI, security, features, review fixes | [CHANGELOG.md](CHANGELOG.md) and `docs/changes/STEP-0x-*.md` |
 
+## Authorship
+
+- **Original project** (tag `v1-original-fyp`): a group final-year project (CS-619) by Faizan Ali and Muhammad Asif,
+  who shared the design and the coding equally.
+- **Refactor** (Steps 1–7): by Faizan Ali.
+- **Third-party:**
+  - Flask, SQLAlchemy, Flask-WTF, Flask-Limiter and the other packages in `requirements.txt`.
+  - Bootstrap 5.3 and Bootstrap Icons 1.11 (both MIT), loaded from a CDN with Subresource Integrity.
+  - The demo pictures are generated SVGs.
+
+## License
+
+[MIT](LICENSE) © 2026 Faizan Ali and Muhammad Asif.
+
 ## Project structure
 
 ```
