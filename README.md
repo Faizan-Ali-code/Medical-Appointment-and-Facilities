@@ -1,10 +1,8 @@
 # MediBook: Medical Appointments & Facilities
 
-[![tests](https://github.com/Faizan-Ali-code/Medical-Appointment-and-Facilities/actions/workflows/tests.yml/badge.svg)](https://github.com/Faizan-Ali-code/Medical-Appointment-and-Facilities/actions/workflows/tests.yml)
-
 Flask web app for booking doctor appointments and hospital facility tests such as lab tests and X-rays.
 It started as a group final-year project (CS-619) and was then refactored, step by step and test-first, into a
-layered application ([CHANGELOG](CHANGELOG.md)).
+layered application.
 
 ## Features
 
@@ -17,7 +15,7 @@ layered application ([CHANGELOG](CHANGELOG.md)).
 
 ## Security
 
-What is implemented, and where, is described in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#security-model):
+What is implemented:
 
 - **Bookings:** double bookings are prevented by unique constraints in the database, not only by a check in the code
 - **Accounts:** scrypt password hashes; at least 8 characters, no common passwords; account lockout after 5 failed
@@ -43,7 +41,7 @@ flowchart TD
 
 ## Tech stack
 
-Python · Flask · SQLAlchemy · Flask-WTF · Flask-Limiter · Bootstrap 5 · SQLite or MySQL · pytest
+Python · Flask · SQLAlchemy · Flask-WTF · Flask-Limiter · Bootstrap 5 · SQLite or MySQL
 
 ## Quick start (Windows)
 
@@ -61,16 +59,6 @@ a local SQLite database and demo data (20 hospitals, 40 doctors, 24 facilities).
 To use MySQL instead of SQLite, create an empty database, set `DATABASE_URL` in `.env` (see `.env.example`) and run
 `setup.bat`. To update an existing database after pulling new code, run `venv\Scripts\flask --app run upgrade-db`.
 
-## Tests
-
-```bat
-venv\Scripts\python -m pip install -r requirements-dev.txt
-test.bat
-```
-
-381 pytest tests run against a temporary database, through HTTP like a browser. The run fails if line and branch
-coverage of `app/` drops below 100% (`pyproject.toml`). GitHub Actions runs the suite on every push.
-
 ## Deployment
 
 `run.py` is for local development only. For a real deployment:
@@ -86,7 +74,7 @@ coverage of `app/` drops below 100% (`pyproject.toml`). GitHub Actions runs the 
 | Stage | Where to find it |
 |---|---|
 | Original group final-year project (single 1,318-line `index.py`, plain-text passwords) | git tag [`v1-original-fyp`](https://github.com/Faizan-Ali-code/Medical-Appointment-and-Facilities/tree/v1-original-fyp/Solution/_original_backup), folder `Solution/_original_backup/` |
-| Steps 1–7: environment, test suite, architecture, UI, security, features, review fixes | [CHANGELOG.md](CHANGELOG.md) and `docs/changes/STEP-0x-*.md` |
+| Refactor in seven steps: environment, test suite, architecture, UI, security, features, review fixes | branch `main` (this version) |
 
 ## Authorship
 
@@ -97,10 +85,6 @@ coverage of `app/` drops below 100% (`pyproject.toml`). GitHub Actions runs the 
   - Flask, SQLAlchemy, Flask-WTF, Flask-Limiter and the other packages in `requirements.txt`.
   - Bootstrap 5.3 and Bootstrap Icons 1.11 (both MIT), loaded from a CDN with Subresource Integrity.
   - The demo pictures are generated SVGs.
-
-## License
-
-[MIT](LICENSE) © 2026 Faizan Ali and Muhammad Asif.
 
 ## Project structure
 
@@ -113,11 +97,8 @@ app/
   migrations.py upgrades existing databases
   templates/    HTML pages
   static/       CSS, JavaScript and public images
-docs/           architecture and one document per refactoring step
-tests/          pytest suite
 run.py          local development server
 wsgi.py         production entry point
 setup.bat       one-time setup
 run.bat         starts the app
-test.bat        runs the tests with coverage
 ```

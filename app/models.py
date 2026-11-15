@@ -5,7 +5,7 @@ Table and column names are the same as in the project's original MySQL dump, so
 an existing database imported from that dump works without changes; columns
 added since then are listed in migrations.py.
 
-Design notes (see docs/ARCHITECTURE.md):
+Design notes:
 * Doctor slots and facility services/fees stay comma-separated text, as in the
   original schema. The admin forms validate and normalise them, and bookings
   store the parsed start time (`starts_at`) so they sort and compare correctly.
