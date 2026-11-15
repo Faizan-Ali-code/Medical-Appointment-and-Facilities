@@ -59,33 +59,6 @@ a local SQLite database and demo data (20 hospitals, 40 doctors, 24 facilities).
 To use MySQL instead of SQLite, create an empty database, set `DATABASE_URL` in `.env` (see `.env.example`) and run
 `setup.bat`. To update an existing database after pulling new code, run `venv\Scripts\flask --app run upgrade-db`.
 
-## Deployment
-
-`run.py` is for local development only. For a real deployment:
-
-1. Set `APP_ENV=production` and a random `SECRET_KEY` of at least 32 characters (production refuses to start
-   without it).
-2. Serve `wsgi.py` with a production server, e.g. `venv\Scripts\waitress-serve --listen=127.0.0.1:8080 wsgi:app`.
-3. Put a reverse proxy that terminates HTTPS in front of it (session cookies are `Secure` in production). With
-   several server processes, point `RATELIMIT_STORAGE_URI` at a shared store such as Redis.
-
-## Project history
-
-| Stage | Where to find it |
-|---|---|
-| Original group final-year project (single 1,318-line `index.py`, plain-text passwords) | git tag [`v1-original-fyp`](https://github.com/Faizan-Ali-code/Medical-Appointment-and-Facilities/tree/v1-original-fyp/Solution/_original_backup), folder `Solution/_original_backup/` |
-| Refactor in seven steps: environment, test suite, architecture, UI, security, features, review fixes | branch `main` (this version) |
-
-## Authorship
-
-- **Original project** (tag `v1-original-fyp`): a group final-year project (CS-619) by Faizan Ali and Muhammad Asif,
-  who shared the design and the coding equally.
-- **Refactor** (Steps 1–7): by Faizan Ali.
-- **Third-party:**
-  - Flask, SQLAlchemy, Flask-WTF, Flask-Limiter and the other packages in `requirements.txt`.
-  - Bootstrap 5.3 and Bootstrap Icons 1.11 (both MIT), loaded from a CDN with Subresource Integrity.
-  - The demo pictures are generated SVGs.
-
 ## Project structure
 
 ```
