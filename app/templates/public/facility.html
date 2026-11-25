@@ -1,0 +1,50 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/cards.html' import category_icon %}
+{% block title %}{{ facility.name }}{% endblock %}
+
+{% block page %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('public.facilities') }}">Facilities</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('public.hospital', id=facility.hospital_id) }}">{{ facility.hospital.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ facility.name }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+          <div class="icon-tile icon-tile-lg"><i class="bi bi-{{ category_icon(facility.category) }}"></i></div>
+          <div>
+            <h1 class="h3 mb-1">{{ facility.name }}</h1>
+            <p class="text-primary fw-semibold mb-0">{{ facility.category }}</p>
+          </div>
+        </div>
+        {% if facility.description %}<p>{{ facility.description }}</p>{% endif %}
+        <dl class="row details mb-0">
+          <dt class="col-sm-4">Fee</dt><dd class="col-sm-8">{{ facility.fee|money }}</dd>
+          <dt class="col-sm-4">Days</dt><dd class="col-sm-8">{{ facility.days_label }}</dd>
+          <dt class="col-sm-4">Timings</dt><dd class="col-sm-8">{{ facility.hours_label }}</dd>
+          <dt class="col-sm-4">{{ facility.hospital.kind }}</dt>
+          <dd class="col-sm-8">
+            <a href="{{ url_for('public.hospital', id=facility.hospital_id) }}">{{ facility.hospital.name }}</a><br>
+            <span class="text-secondary small">{{ facility.hospital.address }} &middot; {{ facility.hospital.phone }}</span>
+          </dd>
+          <dt class="col-sm-4">Result</dt>
+          <dd class="col-sm-8">You can read the result in your account once the test is done.</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    {% set subject = facility %}
+    {% set picker_title = 'Book this ' ~ ('scan' if facility.category == 'Radiology' else 'test') %}
+    {% set submit_label = 'Book now' %}
+    {% set post_url = url_for('account.book_facility', id=facility.id) %}
+    {% include 'partials/slot_picker.html' %}
+  </div>
+</div>
+{% endblock %}

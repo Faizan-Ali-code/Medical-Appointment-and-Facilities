@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import picture with context %}
+{% block title %}{{ doctor.name }}{% endblock %}
+
+{% block page %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('public.doctors') }}">Doctors</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('public.hospital', id=doctor.hospital_id) }}">{{ doctor.hospital.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ doctor.name }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+          {{ picture(doctor.image, doctor.name, 'person', 'avatar avatar-lg') }}
+          <div>
+            <h1 class="h3 mb-1">{{ doctor.name }}</h1>
+            <p class="text-primary fw-semibold mb-1">{{ doctor.specialization }}</p>
+            <p class="text-secondary mb-0">{{ doctor.qualification }}</p>
+          </div>
+        </div>
+        {% if doctor.description %}<p>{{ doctor.description }}</p>{% endif %}
+        <dl class="row details mb-0">
+          <dt class="col-sm-4">Consultation fee</dt><dd class="col-sm-8">{{ doctor.fee|money }}</dd>
+          <dt class="col-sm-4">Days</dt><dd class="col-sm-8">{{ doctor.days_label }}</dd>
+          <dt class="col-sm-4">Timings</dt><dd class="col-sm-8">{{ doctor.hours_label }}</dd>
+          <dt class="col-sm-4">{{ doctor.hospital.kind }}</dt>
+          <dd class="col-sm-8">
+            <a href="{{ url_for('public.hospital', id=doctor.hospital_id) }}">{{ doctor.hospital.name }}</a><br>
+            <span class="text-secondary small">{{ doctor.hospital.address }} &middot; {{ doctor.hospital.phone }}</span>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    {% set subject = doctor %}
+    {% set picker_title = 'Book an appointment' %}
+    {% set submit_label = 'Book appointment' %}
+    {% set post_url = url_for('account.book_doctor', id=doctor.id) %}
+    {% include 'partials/slot_picker.html' %}
+  </div>
+</div>
+{% endblock %}

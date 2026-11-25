@@ -1,0 +1,27 @@
+{% extends 'layouts/base.html' %}
+
+{# The admin area: every admin page fills the `page` block below the section links. #}
+{% set sections = [
+  ('Dashboard', 'speedometer2', 'admin.dashboard', ['dashboard']),
+  ('Cities', 'geo-alt', 'admin.cities', ['cities', 'city_new', 'city_edit']),
+  ('Hospitals & Labs', 'hospital', 'admin.hospitals', ['hospitals', 'hospital_new', 'hospital_edit']),
+  ('Specialists', 'person-badge', 'admin.doctors', ['doctors', 'doctor_new', 'doctor_edit']),
+  ('Facilities', 'clipboard2-pulse', 'admin.facilities', ['facilities', 'facility_new', 'facility_edit']),
+  ('Users', 'people', 'admin.users', ['users', 'user_new', 'user_edit']),
+  ('Appointments', 'calendar-check', 'admin.appointments',
+   ['appointments', 'appointment_reschedule', 'appointment_result']),
+] %}
+
+{% block content %}
+<nav class="admin-nav mb-4" aria-label="Admin sections">
+  <ul class="nav nav-underline flex-nowrap">
+    {% for label, icon, endpoint, pages in sections %}
+    <li class="nav-item">
+      <a class="nav-link {{ 'active' if request.endpoint.split('.')[-1] in pages }}"
+         href="{{ url_for(endpoint) }}"><i class="bi bi-{{ icon }}"></i> {{ label }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% block page %}{% endblock %}
+{% endblock %}

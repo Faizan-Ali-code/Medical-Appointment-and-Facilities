@@ -1,0 +1,324 @@
+/* MediBook styles on top of Bootstrap 5: brand colour first, then the few custom components. */
+
+/* ---------- brand colour (teal) ---------- */
+:root {
+  --brand: #0f766e;
+  --brand-dark: #115e59;
+  --brand-darker: #134e4a;
+  --bs-primary: var(--brand);
+  --bs-primary-rgb: 15, 118, 110;
+  --bs-primary-bg-subtle: #d9f2ee;
+  --bs-primary-border-subtle: #a7dcd5;
+  --bs-primary-text-emphasis: #0b524c;
+  --bs-link-color: var(--brand);
+  --bs-link-color-rgb: 15, 118, 110;
+  --bs-link-hover-color: var(--brand-dark);
+  --bs-link-hover-color-rgb: 17, 94, 89;
+  --bs-body-bg: #f5f7f8;
+  --bs-focus-ring-color: rgba(15, 118, 110, .25);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand-dark);
+  --bs-btn-hover-border-color: var(--brand-dark);
+  --bs-btn-active-bg: var(--brand-darker);
+  --bs-btn-active-border-color: var(--brand-darker);
+  --bs-btn-disabled-bg: var(--brand);
+  --bs-btn-disabled-border-color: var(--brand);
+  --bs-btn-focus-shadow-rgb: 15, 118, 110;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand);
+  --bs-btn-hover-border-color: var(--brand);
+  --bs-btn-active-bg: var(--brand);
+  --bs-btn-active-border-color: var(--brand);
+  --bs-btn-disabled-color: var(--brand);
+  --bs-btn-disabled-border-color: var(--brand);
+  --bs-btn-focus-shadow-rgb: 15, 118, 110;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: #5eb5ac;
+  box-shadow: 0 0 0 .25rem rgba(15, 118, 110, .2);
+}
+
+.form-check-input:checked {
+  background-color: var(--brand);
+  border-color: var(--brand);
+}
+
+.pagination {
+  --bs-pagination-color: var(--brand);
+  --bs-pagination-hover-color: var(--brand-dark);
+  --bs-pagination-focus-color: var(--brand-dark);
+  --bs-pagination-focus-box-shadow: 0 0 0 .25rem rgba(15, 118, 110, .2);
+  --bs-pagination-active-bg: var(--brand);
+  --bs-pagination-active-border-color: var(--brand);
+}
+
+/* ---------- navigation ---------- */
+.navbar .nav-link.active {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.admin-nav {
+  overflow-x: auto;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.admin-nav .nav {
+  --bs-nav-link-color: var(--bs-secondary-color);
+  --bs-nav-link-hover-color: var(--brand);
+  --bs-nav-underline-link-active-color: var(--brand);
+}
+
+.admin-nav .nav-link {
+  white-space: nowrap;
+}
+
+/* ---------- home page ---------- */
+.hero {
+  background: linear-gradient(135deg, var(--brand) 0%, #0e7490 100%);
+}
+
+.hero-stat {
+  background: rgba(255, 255, 255, .12);
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+.step {
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+.step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ---------- cards and pictures ---------- */
+.card {
+  border-color: #e6eaed;
+}
+
+.lift {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--bs-box-shadow) !important;
+}
+
+.cover {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.cover-tall {
+  height: 100%;
+  min-height: 14rem;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-sm {
+  width: 3rem;
+  height: 3rem;
+}
+
+.avatar-lg {
+  width: 6rem;
+  height: 6rem;
+}
+
+/* shown when a hospital or doctor has no picture */
+.no-picture,
+.icon-tile {
+  display: grid;
+  place-items: center;
+  background: var(--bs-primary-bg-subtle);
+  color: var(--brand);
+  font-size: 1.75rem;
+}
+
+.cover.no-picture {
+  font-size: 3.5rem;
+}
+
+.icon-tile {
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--bs-border-radius-lg);
+}
+
+.icon-tile-lg {
+  width: 5rem;
+  height: 5rem;
+  font-size: 2.25rem;
+}
+
+/* ---------- details ---------- */
+.facts li {
+  margin-bottom: .35rem;
+}
+
+.facts .bi {
+  margin-right: .35rem;
+  color: var(--brand);
+}
+
+.details dt {
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+}
+
+.details dd {
+  margin-bottom: .6rem;
+}
+
+.when {
+  padding: .75rem 1rem;
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+  font-weight: 600;
+}
+
+.result {
+  padding: 1rem;
+  border-left: 4px solid var(--brand);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-tertiary-bg);
+  white-space: pre-line;
+}
+
+/* ---------- slot picker ---------- */
+.slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: .5rem;
+}
+
+.slot {
+  padding: .45rem .25rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: #fff;
+  font-size: .9rem;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.slot-free {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.btn-check:not(:disabled) + .slot-free {
+  cursor: pointer;
+}
+
+.btn-check:not(:disabled) + .slot-free:hover {
+  background: var(--bs-primary-bg-subtle);
+}
+
+.btn-check:checked + .slot-free {
+  background: var(--brand);
+  color: #fff;
+}
+
+.btn-check:focus-visible + .slot {
+  box-shadow: 0 0 0 .25rem rgba(15, 118, 110, .3);
+}
+
+.slot-booked {
+  border-color: #f1c4c4;
+  background: #fdf1f1;
+  color: #b4474f;
+  text-decoration: line-through;
+}
+
+.slot-passed {
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-secondary-color);
+}
+
+.key {
+  display: inline-block;
+  width: .9rem;
+  height: .9rem;
+  padding: 0;
+  margin-right: .25rem;
+  vertical-align: -.1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: .2rem;
+}
+
+.key.slot-free {
+  border-color: var(--brand);
+  background: #fff;
+}
+
+.key.slot-booked {
+  border-color: #e3a1a6;
+  background: #f9dcdc;
+}
+
+.key.slot-passed {
+  border-color: #ced4da;
+  background: #dee2e6;
+}
+
+/* ---------- tables ---------- */
+.table-responsive > .table {
+  min-width: 46rem;   /* on a phone the table scrolls sideways instead of squeezing its columns */
+}
+
+.table > :not(caption) > * > * {
+  padding: .7rem .9rem;
+}
+
+.table thead th {
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lift {
+    transition: none;
+  }
+
+  .lift:hover {
+    transform: none;
+  }
+}

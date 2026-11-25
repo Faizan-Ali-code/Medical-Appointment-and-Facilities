@@ -1,0 +1,7 @@
+{# Working days, hours and slot length: the same for doctors and facilities. #}
+{% from 'partials/macros.html' import checks, field with context %}
+<div class="col-12"><hr class="my-1"><h2 class="h6 text-secondary mb-0">Timings</h2></div>
+{{ checks(form.day_list) }}
+{{ field(form.start_time, 'col-md-4') }}
+{{ field(form.end_time, 'col-md-4') }}
+{{ field(form.slot_minutes, 'col-md-4', hint='One appointment is booked per slot.') }}

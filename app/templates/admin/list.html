@@ -1,0 +1,38 @@
+{#
+  The frame of every "manage ..." page: heading, Add button, filter bar, table and page links.
+  A page sets `heading`, `noun` and (unless nothing can be added) `add_url` and `add_label`,
+  then fills the blocks `filters`, `head` and `rows`.
+#}
+{% extends 'layouts/admin.html' %}
+{% from 'partials/macros.html' import empty, filter_select, pagination, post_button, search_box, showing, status with context %}
+{% block title %}{{ heading }}{% endblock %}
+
+{% block page %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">{{ heading }}</h1>
+  {% if add_url %}<a class="btn btn-primary" href="{{ add_url }}"><i class="bi bi-plus-lg"></i> {{ add_label }}</a>{% endif %}
+</div>
+
+<form method="get" class="row g-2 mb-3" data-autosubmit>
+  {% block filters %}{% endblock %}
+  <div class="col-md-auto d-flex gap-2">
+    <button class="btn btn-outline-primary">Search</button>
+    {% if request.args %}<a class="btn btn-link" href="{{ url_for(request.endpoint) }}">Clear</a>{% endif %}
+  </div>
+</form>
+
+{{ showing(page, noun) }}
+{% if page.total %}
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr>{% block head %}{% endblock %}<th class="text-end">Actions</th></tr></thead>
+      <tbody>{% block rows %}{% endblock %}</tbody>
+    </table>
+  </div>
+</div>
+{{ pagination(page) }}
+{% else %}
+<div class="card shadow-sm">{{ empty('inbox', 'Nothing to show', 'Try a different search or filter.') }}</div>
+{% endif %}
+{% endblock %}

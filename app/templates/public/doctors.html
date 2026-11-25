@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import empty, filter_select, pagination, search_box, showing with context %}
+{% from 'partials/cards.html' import doctor_card with context %}
+{% block title %}Doctors{% endblock %}
+
+{% block page %}
+<h1 class="h3 mb-1">Consultants and specialists</h1>
+<p class="text-secondary">See each doctor's timings and fee, then check the free slots and book.</p>
+
+<form method="get" class="row g-2 mb-3" data-autosubmit>
+  {% if request.args.get('hospital') %}<input type="hidden" name="hospital" value="{{ request.args.get('hospital') }}">{% endif %}
+  <div class="col-md">{{ search_box('Search by doctor, specialization, hospital or city') }}</div>
+  <div class="col-sm-6 col-md-3">{{ filter_select('city', 'All cities', cities) }}</div>
+  <div class="col-sm-6 col-md-3">{{ filter_select('specialization', 'All specializations', specializations) }}</div>
+  <div class="col-md-auto d-grid"><button class="btn btn-primary">Search</button></div>
+</form>
+
+{{ showing(page, 'doctors') }}
+<div class="row g-3">
+  {% for doctor in page.items %}{{ doctor_card(doctor) }}{% endfor %}
+</div>
+{% if not page.total %}
+  {{ empty('person-badge', 'No doctors found', 'Try another city, specialization or search.') }}
+{% endif %}
+{{ pagination(page) }}
+{% endblock %}

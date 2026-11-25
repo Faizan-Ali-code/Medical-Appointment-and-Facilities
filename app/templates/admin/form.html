@@ -1,0 +1,27 @@
+{#
+  The frame of every add / edit page. A page sets `what` (for the heading) and `back_url`,
+  then puts its fields in the `fields` block.
+#}
+{% extends 'layouts/admin.html' %}
+{% set action = 'Edit' if form.record.id else 'Add' %}
+{% block title %}{{ action }} {{ what }}{% endblock %}
+
+{% block page %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <h1 class="h3 mb-3">{{ action }} {{ what }}</h1>
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data" class="row g-3" novalidate>
+          {{ form.hidden_tag() }}
+          {% block fields %}{% endblock %}
+          <div class="col-12 d-flex gap-2 pt-2">
+            <button class="btn btn-primary"><i class="bi bi-check-lg"></i> Save</button>
+            <a class="btn btn-outline-secondary" href="{{ back_url }}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

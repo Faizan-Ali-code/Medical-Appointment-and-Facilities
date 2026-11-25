@@ -1,0 +1,29 @@
+{% extends 'layouts/admin.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% block title %}Test result{% endblock %}
+
+{% block page %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h3 mb-3">{{ 'Edit' if appointment.result else 'Enter' }} test result</h1>
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <dl class="row details">
+          <dt class="col-sm-3">Test or scan</dt><dd class="col-sm-9">{{ appointment.subject.name }} ({{ appointment.subject.category }})</dd>
+          <dt class="col-sm-3">{{ appointment.hospital.kind }}</dt><dd class="col-sm-9">{{ appointment.hospital.name }}</dd>
+          <dt class="col-sm-3">User</dt><dd class="col-sm-9">{{ appointment.user.name }} ({{ appointment.user.phone }})</dd>
+          <dt class="col-sm-3">Date and time</dt><dd class="col-sm-9">{{ appointment.date|longdate }} at {{ appointment.time|clock }}</dd>
+        </dl>
+        <form method="post" class="row g-3" novalidate>
+          {{ form.hidden_tag() }}
+          {{ field(form.result, rows=5, autofocus=true, hint='Saving the result marks the appointment as completed. The user sees the result in their account.') }}
+          <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary"><i class="bi bi-check-lg"></i> Save result</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.appointments') }}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

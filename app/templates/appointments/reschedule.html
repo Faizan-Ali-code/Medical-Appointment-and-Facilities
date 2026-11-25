@@ -1,0 +1,36 @@
+{# Used by users (own appointments) and by admins (any appointment); `layout` is the page frame of each. #}
+{% extends layout %}
+{% block title %}Reschedule appointment{% endblock %}
+
+{% block page %}
+{% set subject = appointment.subject %}
+<h1 class="h3 mb-4">Reschedule appointment</h1>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 card-title">Current appointment</h2>
+        <dl class="details mb-0">
+          <dt>{{ 'Test or scan' if appointment.is_test else 'Doctor' }}</dt><dd>{{ subject.name }}</dd>
+          <dt>{{ appointment.hospital.kind }}</dt><dd>{{ appointment.hospital.name }}</dd>
+          {% if current_user.is_admin %}<dt>Booked by</dt><dd>{{ appointment.user.name }} ({{ appointment.user.phone }})</dd>{% endif %}
+          <dt>Date and time</dt>
+          <dd class="mb-0">{{ appointment.date|longdate }} at {{ appointment.time|clock }}</dd>
+        </dl>
+      </div>
+      <div class="card-footer bg-white">
+        <a class="btn btn-outline-secondary" href="{{ done_url }}"><i class="bi bi-arrow-left"></i> Keep it as it is</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    {% set picker_title = 'Choose a new date and time' %}
+    {% set submit_label = 'Move appointment' %}
+    {% set post_url = url_for(request.endpoint, id=appointment.id) %}
+    {% set anyone_can_pick = true %}
+    {% include 'partials/slot_picker.html' %}
+  </div>
+</div>
+{% endblock %}

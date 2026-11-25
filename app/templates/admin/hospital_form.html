@@ -1,0 +1,15 @@
+{% extends 'admin/form.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% set what, back_url = 'hospital, clinic or lab', url_for('admin.hospitals') %}
+
+{% block fields %}
+{{ field(form.name, 'col-md-8', autofocus=true) }}
+{{ field(form.kind, 'col-md-4') }}
+{{ field(form.city_id, 'col-md-4') }}
+{{ field(form.address, 'col-md-8', hint='The location: street, area and city.') }}
+{{ field(form.phone, 'col-md-4', type='tel') }}
+{{ field(form.timings, 'col-md-8', placeholder='For example: Open 24 hours, every day') }}
+{{ field(form.description, rows=4, hint='For example: pharmacy, ambulance, parking, home sample collection.') }}
+{{ field(form.image, hint='Optional. PNG, JPG, GIF or WebP, up to 5 MB.' ~ (' Leave empty to keep the current picture.' if form.record.image else ''),
+         accept='image/png,image/jpeg,image/gif,image/webp') }}
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'admin/form.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% set what, back_url = 'city', url_for('admin.cities') %}
+
+{% block fields %}
+{{ field(form.name, 'col-md-6', autofocus=true) }}
+{% endblock %}

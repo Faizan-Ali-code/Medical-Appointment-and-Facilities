@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import empty, filter_select, pagination, search_box, showing with context %}
+{% from 'partials/cards.html' import facility_card with context %}
+{% block title %}Facilities{% endblock %}
+
+{% block page %}
+<h1 class="h3 mb-1">Facilities: tests and scans</h1>
+<p class="text-secondary">Pathology, paramedical and radiology services. Check the free slots and book a time.</p>
+
+<form method="get" class="row g-2 mb-3" data-autosubmit>
+  {% if request.args.get('hospital') %}<input type="hidden" name="hospital" value="{{ request.args.get('hospital') }}">{% endif %}
+  <div class="col-md">{{ search_box('Search by test, scan, hospital or city') }}</div>
+  <div class="col-sm-6 col-md-3">{{ filter_select('city', 'All cities', cities) }}</div>
+  <div class="col-sm-6 col-md-3">{{ filter_select('category', 'All departments', categories) }}</div>
+  <div class="col-md-auto d-grid"><button class="btn btn-primary">Search</button></div>
+</form>
+
+{{ showing(page, 'facilities') }}
+<div class="row g-3">
+  {% for facility in page.items %}{{ facility_card(facility) }}{% endfor %}
+</div>
+{% if not page.total %}
+  {{ empty('clipboard2-pulse', 'No facilities found', 'Try another city, department or search.') }}
+{% endif %}
+{{ pagination(page) }}
+{% endblock %}

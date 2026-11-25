@@ -1,0 +1,15 @@
+{% extends 'admin/form.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% set what, back_url = 'doctor', url_for('admin.doctors') %}
+
+{% block fields %}
+{{ field(form.name, 'col-md-6', autofocus=true, placeholder='Dr. ') }}
+{{ field(form.hospital_id, 'col-md-6') }}
+{{ field(form.specialization, 'col-md-4', placeholder='For example: Cardiologist') }}
+{{ field(form.qualification, 'col-md-5', placeholder='For example: MBBS, FCPS') }}
+{{ field(form.fee, 'col-md-3', min=0, step=50) }}
+{{ field(form.description, rows=3) }}
+{{ field(form.image, hint='Optional. PNG, JPG, GIF or WebP, up to 5 MB.' ~ (' Leave empty to keep the current photo.' if form.record.image else ''),
+         accept='image/png,image/jpeg,image/gif,image/webp') }}
+{% include 'admin/_schedule_fields.html' %}
+{% endblock %}

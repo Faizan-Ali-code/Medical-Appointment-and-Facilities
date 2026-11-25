@@ -1,0 +1,82 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import picture with context %}
+{% from 'partials/cards.html' import category_icon, kind_icon %}
+{% block title %}{{ hospital.name }}{% endblock %}
+
+{% block page %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('public.hospitals') }}">Hospitals &amp; Labs</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('public.hospitals', city=hospital.city_id) }}">{{ hospital.city.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ hospital.name }}</li>
+  </ol>
+</nav>
+
+<div class="card shadow-sm mb-4 overflow-hidden">
+  <div class="row g-0">
+    <div class="col-md-5">{{ picture(hospital.image, hospital.name, kind_icon(hospital.kind), 'cover cover-tall w-100') }}</div>
+    <div class="col-md-7">
+      <div class="card-body">
+        <span class="badge bg-primary-subtle text-primary-emphasis mb-2">
+          <i class="bi bi-{{ kind_icon(hospital.kind) }}"></i> {{ hospital.kind }}
+        </span>
+        <h1 class="h3">{{ hospital.name }}</h1>
+        <ul class="list-unstyled facts mb-3">
+          <li><i class="bi bi-geo-alt"></i> {{ hospital.address }}</li>
+          <li><i class="bi bi-clock"></i> {{ hospital.timings }}</li>
+          <li><i class="bi bi-telephone"></i> {{ hospital.phone }}</li>
+        </ul>
+        {% if hospital.description %}<p class="text-secondary mb-0">{{ hospital.description }}</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if hospital.doctors %}
+<section class="mb-4">
+  <h2 class="h5 mb-3"><i class="bi bi-person-badge text-primary"></i> Doctors ({{ hospital.doctors|length }})</h2>
+  <div class="card shadow-sm">
+    <div class="list-group list-group-flush">
+      {% for doctor in hospital.doctors %}
+      <div class="list-group-item d-flex flex-wrap align-items-center gap-3 py-3">
+        {{ picture(doctor.image, doctor.name, 'person', 'avatar avatar-sm') }}
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ doctor.name }}</div>
+          <div class="small text-secondary">{{ doctor.specialization }} &middot; {{ doctor.days_label }}, {{ doctor.hours_label }}</div>
+        </div>
+        <span class="fw-semibold">{{ doctor.fee|money }}</span>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('public.doctor', id=doctor.id) }}">View and book</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% for category in categories %}
+{% set offered = hospital.facilities|selectattr('category', 'equalto', category)|list %}
+{% if offered %}
+<section class="mb-4">
+  <h2 class="h5 mb-3"><i class="bi bi-{{ category_icon(category) }} text-primary"></i> {{ category }} ({{ offered|length }})</h2>
+  <div class="card shadow-sm">
+    <div class="list-group list-group-flush">
+      {% for facility in offered %}
+      <div class="list-group-item d-flex flex-wrap align-items-center gap-3 py-3">
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ facility.name }}</div>
+          <div class="small text-secondary">{{ facility.days_label }}, {{ facility.hours_label }}</div>
+        </div>
+        <span class="fw-semibold">{{ facility.fee|money }}</span>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('public.facility', id=facility.id) }}">View and book</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endfor %}
+
+{% if not hospital.doctors and not hospital.facilities %}
+<p class="text-secondary">No doctors or facilities have been added for this place yet.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'admin/list.html' %}
+{% from 'partials/macros.html' import filter_select, post_button, search_box with context %}
+{% set heading, noun = 'Manage users', 'users' %}
+{% set add_url, add_label = url_for('admin.user_new'), 'Add user' %}
+
+{% block filters %}
+<div class="col-md">{{ search_box('Search by name, email or phone') }}</div>
+<div class="col-md-3">{{ filter_select('role', 'Users and admins', [('user', 'Users only'), ('admin', 'Admins only')]) }}</div>
+{% endblock %}
+
+{% block head %}<th>Name</th><th>Email</th><th>Phone</th><th>City</th><th>Role</th>{% endblock %}
+
+{% block rows %}
+{% for user in page.items %}
+<tr>
+  <td class="fw-semibold">{{ user.name }}{% if user.id == current_user.id %} <span class="badge text-bg-light border">You</span>{% endif %}</td>
+  <td>{{ user.email }}</td>
+  <td class="text-nowrap">{{ user.phone }}</td>
+  <td>{{ user.city.name if user.city else '' }}</td>
+  <td><span class="badge {{ 'text-bg-dark' if user.is_admin else 'bg-primary-subtle text-primary-emphasis' }}">{{ user.role|capitalize }}</span></td>
+  <td class="text-end text-nowrap">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.user_edit', id=user.id) }}">Edit</a>
+    {% if user.id != current_user.id %}
+    {{ post_button(url_for('admin.user_delete', id=user.id), 'Delete',
+                   confirm='Delete the account of ' ~ user.name ~ ' and its past appointments?') }}
+    {% endif %}
+  </td>
+</tr>
+{% endfor %}
+{% endblock %}

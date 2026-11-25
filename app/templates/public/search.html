@@ -1,0 +1,39 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import empty, filter_select, search_box with context %}
+{% from 'partials/cards.html' import doctor_card, facility_card, hospital_card with context %}
+{% block title %}Search{% endblock %}
+
+{% block page %}
+<h1 class="h3 mb-1">Search</h1>
+<p class="text-secondary">Search by city, hospital name, type of service or specialist name.</p>
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md">{{ search_box('For example: cardiologist, MRI, Crescent, Dr. Khan') }}</div>
+  <div class="col-md-3">{{ filter_select('city', 'All cities', cities) }}</div>
+  <div class="col-md-auto d-grid"><button class="btn btn-primary">Search</button></div>
+</form>
+
+{% if not groups %}
+  {{ empty('search', 'What are you looking for?', 'Type a name or choose a city, then press Search.') }}
+{% elif not found %}
+  {{ empty('emoji-frown', 'Nothing found', 'Try a shorter word or another city.') }}
+{% else %}
+  {% for group in groups if group.total %}
+  <section class="mb-5">
+    <div class="d-flex justify-content-between align-items-baseline mb-3">
+      <h2 class="h5 mb-0">{{ group.title }} <span class="text-secondary fw-normal">({{ group.total }})</span></h2>
+      {% if group.total > group.rows|length %}
+      <a href="{{ url_for(group.endpoint, **request.args) }}">See all {{ group.total }} <i class="bi bi-arrow-right"></i></a>
+      {% endif %}
+    </div>
+    <div class="row g-3">
+      {% for row in group.rows %}
+        {% if group.endpoint == 'public.hospitals' %}{{ hospital_card(row) }}
+        {% elif group.endpoint == 'public.doctors' %}{{ doctor_card(row) }}
+        {% else %}{{ facility_card(row) }}{% endif %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+{% endif %}
+{% endblock %}

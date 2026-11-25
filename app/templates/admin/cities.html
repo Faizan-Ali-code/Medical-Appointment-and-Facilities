@@ -1,0 +1,23 @@
+{% extends 'admin/list.html' %}
+{% from 'partials/macros.html' import post_button, search_box with context %}
+{% set heading, noun = 'Manage cities', 'cities' %}
+{% set add_url, add_label = url_for('admin.city_new'), 'Add city' %}
+
+{% block filters %}
+<div class="col-md-5">{{ search_box('Search by city name') }}</div>
+{% endblock %}
+
+{% block head %}<th>City</th><th>Hospitals, clinics and labs</th>{% endblock %}
+
+{% block rows %}
+{% for city in page.items %}
+<tr>
+  <td class="fw-semibold">{{ city.name }}</td>
+  <td><a href="{{ url_for('admin.hospitals', city=city.id) }}">{{ city.hospitals|length }}</a></td>
+  <td class="text-end text-nowrap">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.city_edit', id=city.id) }}">Edit</a>
+    {{ post_button(url_for('admin.city_delete', id=city.id), 'Delete', confirm='Delete the city ' ~ city.name ~ '?') }}
+  </td>
+</tr>
+{% endfor %}
+{% endblock %}

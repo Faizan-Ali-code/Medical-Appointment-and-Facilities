@@ -1,0 +1,67 @@
+{#
+  Choose a day, see its slots and pick a free one.
+
+  From the view (services.appointments.day_view): date, problem, slots.
+  Set before including: subject, picker_title, post_url, submit_label, and anyone_can_pick = true on pages
+  where an admin may choose a slot too (rescheduling).
+#}
+{% set can_pick = anyone_can_pick is defined or (current_user and not current_user.is_admin) %}
+{% set free = slots|selectattr('is_free')|list|length %}
+
+<div class="card shadow-sm slot-picker">
+  <div class="card-body">
+    <h2 class="h5 card-title mb-3"><i class="bi bi-calendar-check text-primary"></i> {{ picker_title }}</h2>
+
+    <form method="get" class="row g-2 align-items-end mb-3" data-autosubmit>
+      <div class="col">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" id="date" name="date" class="form-control" required
+               value="{{ date.isoformat() if date }}" min="{{ today().isoformat() }}">
+      </div>
+      <div class="col-auto"><button class="btn btn-outline-primary">Check slots</button></div>
+    </form>
+    <p class="small text-secondary">
+      Available: {{ subject.days_label }}, {{ subject.hours_label }} &middot; {{ subject.slot_minutes }}-minute slots
+    </p>
+
+    {% if problem %}
+    <div class="alert alert-warning mb-0">{{ problem }}</div>
+    {% else %}
+    <p class="fw-semibold mb-2">
+      {{ date|longdate }}:
+      {% if free %}<span class="text-success">{{ free }} free slot{{ 's' if free != 1 }}</span>
+      {% else %}<span class="text-danger">no free slots, please try another date</span>{% endif %}
+    </p>
+
+    <form method="post" action="{{ post_url }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="date" value="{{ date.isoformat() }}">
+      <div class="slots mb-3" role="radiogroup" aria-label="Time slots">
+        {% for slot in slots %}
+        {% set id = 'slot-' ~ slot.value|replace(':', '') %}
+        <input type="radio" class="btn-check" name="time" id="{{ id }}" value="{{ slot.value }}" required
+               {{ 'disabled' if not (slot.is_free and can_pick) }}>
+        <label class="slot slot-{{ slot.state }}" for="{{ id }}"
+               title="{{ {'free': 'Free', 'booked': 'Already booked', 'passed': 'This time has passed'}[slot.state] }}">{{ slot.label }}</label>
+        {% endfor %}
+      </div>
+      <p class="small text-secondary d-flex flex-wrap gap-3 mb-3">
+        <span><span class="key slot-free"></span> Free</span>
+        <span><span class="key slot-booked"></span> Booked</span>
+        <span><span class="key slot-passed"></span> Passed</span>
+      </p>
+
+      {% if can_pick %}
+      <button class="btn btn-primary w-100" {{ 'disabled' if not free }}>{{ submit_label }}</button>
+      {% elif current_user %}
+      <p class="alert alert-info small mb-0">Bookings are made from a user account. Admins manage appointments in the admin area.</p>
+      {% else %}
+      <a class="btn btn-primary w-100" href="{{ url_for('auth.login', next=request.full_path) }}">Log in to book</a>
+      <p class="small text-secondary text-center mt-2 mb-0">
+        New here? <a href="{{ url_for('auth.register', next=request.full_path) }}">Create an account</a>
+      </p>
+      {% endif %}
+    </form>
+    {% endif %}
+  </div>
+</div>

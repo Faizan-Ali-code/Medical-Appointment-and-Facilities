@@ -1,0 +1,78 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import post_button, status with context %}
+{% block title %}Appointment: {{ appointment.subject.name }}{% endblock %}
+
+{% block page %}
+{% set subject, place = appointment.subject, appointment.hospital %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('account.appointment_list') }}">My appointments</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ subject.name }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+          <div>
+            <h1 class="h4 mb-1">{{ subject.name }}</h1>
+            <p class="text-primary fw-semibold mb-0">{{ subject.category if appointment.is_test else subject.specialization }}</p>
+          </div>
+          {{ status(appointment) }}
+        </div>
+        <div class="when mb-3">
+          <i class="bi bi-calendar-event"></i> {{ appointment.date.strftime('%A, %d %B %Y') }}
+          <span class="mx-2">&middot;</span>
+          <i class="bi bi-clock"></i> {{ appointment.time|clock }}
+        </div>
+        <dl class="row details mb-0">
+          <dt class="col-sm-4">{{ place.kind }}</dt><dd class="col-sm-8">{{ place.name }}</dd>
+          <dt class="col-sm-4">Address</dt><dd class="col-sm-8">{{ place.address }}</dd>
+          <dt class="col-sm-4">Phone</dt><dd class="col-sm-8">{{ place.phone }}</dd>
+          <dt class="col-sm-4">Fee</dt><dd class="col-sm-8">{{ subject.fee|money }}</dd>
+          {% if appointment.is_test and subject.description %}
+          <dt class="col-sm-4">Details</dt><dd class="col-sm-8">{{ subject.description }}</dd>
+          {% endif %}
+          <dt class="col-sm-4">Booked on</dt><dd class="col-sm-8">{{ appointment.created_at|longdate }}</dd>
+        </dl>
+      </div>
+      {% if appointment.is_upcoming %}
+      <div class="card-footer bg-white d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" href="{{ url_for('account.reschedule', id=appointment.id) }}">
+          <i class="bi bi-calendar2-week"></i> Reschedule
+        </a>
+        {{ post_button(url_for('account.cancel', id=appointment.id), 'Cancel appointment', 'btn btn-outline-danger', 'x-circle',
+                       'Cancel this appointment? Its slot will become free for other people.') }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    {% if appointment.is_test %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 card-title"><i class="bi bi-clipboard2-pulse text-primary"></i> Test result</h2>
+        {% if appointment.result %}
+        <p class="result mb-0">{{ appointment.result }}</p>
+        {% elif appointment.status == 'cancelled' %}
+        <p class="text-secondary mb-0">This appointment was cancelled, so there is no result.</p>
+        {% else %}
+        <p class="text-secondary mb-0">The result is not ready yet. It will appear here after your test.</p>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 card-title"><i class="bi bi-info-circle text-primary"></i> Before your visit</h2>
+        <p class="text-secondary mb-0">Please arrive 10 minutes early and bring any earlier reports or prescriptions.
+          If you cannot come, cancel or reschedule so that someone else can use the slot.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

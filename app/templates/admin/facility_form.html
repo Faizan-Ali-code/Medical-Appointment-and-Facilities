@@ -1,0 +1,12 @@
+{% extends 'admin/form.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% set what, back_url = 'facility', url_for('admin.facilities') %}
+
+{% block fields %}
+{{ field(form.name, 'col-md-6', autofocus=true, placeholder='For example: Chest X-Ray') }}
+{{ field(form.hospital_id, 'col-md-6') }}
+{{ field(form.category, 'col-md-6') }}
+{{ field(form.fee, 'col-md-6', min=0, step=50) }}
+{{ field(form.description, rows=3) }}
+{% include 'admin/_schedule_fields.html' %}
+{% endblock %}

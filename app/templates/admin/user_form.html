@@ -1,0 +1,13 @@
+{% extends 'admin/form.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% set what, back_url = 'user', url_for('admin.users') %}
+
+{% block fields %}
+{{ field(form.name, 'col-md-6', autofocus=true) }}
+{{ field(form.email, 'col-md-6', type='email') }}
+{{ field(form.phone, 'col-md-6', type='tel') }}
+{{ field(form.city_id, 'col-md-6') }}
+{{ field(form.password, 'col-md-6', autocomplete='new-password',
+         hint='Leave empty to keep the current password.' if form.record.id else 'At least 6 characters.') }}
+{{ field(form.role, 'col-md-6') }}
+{% endblock %}

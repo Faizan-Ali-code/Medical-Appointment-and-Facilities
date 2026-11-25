@@ -1,0 +1,26 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import field with context %}
+{% block title %}Log in{% endblock %}
+
+{% block page %}
+<div class="row justify-content-center">
+  <div class="col-md-7 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h3 mb-1">Log in</h1>
+        <p class="text-secondary">Welcome back. Log in to book and manage your appointments.</p>
+        <form method="post" class="row g-3" novalidate>
+          {{ form.hidden_tag() }}
+          {{ field(form.email, type='email', autocomplete='username', autofocus=true) }}
+          {{ field(form.password, autocomplete='current-password') }}
+          <div class="col-12 d-grid"><button class="btn btn-primary">Log in</button></div>
+        </form>
+        <p class="small text-secondary mt-3 mb-0">Forgot your password? Please contact the administrator to have it reset.</p>
+      </div>
+      <div class="card-footer bg-white text-center">
+        New here? <a href="{{ url_for('auth.register', next=request.args.get('next')) }}">Create an account</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

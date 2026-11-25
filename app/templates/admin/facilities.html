@@ -1,0 +1,31 @@
+{% extends 'admin/list.html' %}
+{% from 'partials/macros.html' import filter_select, post_button, search_box with context %}
+{% set heading, noun = 'Manage facilities', 'facilities' %}
+{% set add_url, add_label = url_for('admin.facility_new'), 'Add facility' %}
+
+{% block filters %}
+<div class="col-md">{{ search_box('Search by facility, hospital or city') }}</div>
+<div class="col-sm-6 col-md-3">{{ filter_select('hospital', 'All hospitals and labs', hospitals) }}</div>
+<div class="col-sm-6 col-md-3">{{ filter_select('category', 'All departments', categories) }}</div>
+{% endblock %}
+
+{% block head %}<th>Facility</th><th>Hospital or lab</th><th>Fee</th><th>Timings</th>{% endblock %}
+
+{% block rows %}
+{% for facility in page.items %}
+<tr>
+  <td>
+    <a class="fw-semibold" href="{{ url_for('public.facility', id=facility.id) }}">{{ facility.name }}</a><br>
+    <span class="small text-secondary">{{ facility.category }}</span>
+  </td>
+  <td>{{ facility.hospital.name }}<br><span class="small text-secondary">{{ facility.hospital.city.name }}</span></td>
+  <td class="text-nowrap">{{ facility.fee|money }}</td>
+  <td class="small">{{ facility.days_label }}<br>{{ facility.hours_label }} &middot; {{ facility.slot_minutes }} min</td>
+  <td class="text-end text-nowrap">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.facility_edit', id=facility.id) }}">Edit</a>
+    {{ post_button(url_for('admin.facility_delete', id=facility.id), 'Delete',
+                   confirm='Delete ' ~ facility.name ~ ' at ' ~ facility.hospital.name ~ ' and its past appointments?') }}
+  </td>
+</tr>
+{% endfor %}
+{% endblock %}

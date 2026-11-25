@@ -1,0 +1,108 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Book doctors, lab tests and scans{% endblock %}
+
+{% block hero %}
+<section class="hero text-white">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1 class="display-5 fw-bold">Book a doctor, a lab test or a scan in a few clicks</h1>
+        <p class="lead mb-4">Choose your city, pick a hospital, clinic or laboratory, check the free slots and book.</p>
+        <form method="get" action="{{ url_for('public.hospitals') }}" class="hero-form row g-2">
+          <div class="col-sm">
+            <label for="city" class="visually-hidden">City</label>
+            <select id="city" name="city" class="form-select form-select-lg" required>
+              <option value="">Select your city</option>
+              {% for city in cities %}
+              <option value="{{ city.id }}" {{ 'selected' if current_user and current_user.city_id == city.id }}>{{ city.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-sm-auto d-grid">
+            <button class="btn btn-light btn-lg fw-semibold"><i class="bi bi-search"></i> Find hospitals and labs</button>
+          </div>
+        </form>
+        <p class="mt-3 mb-0">
+          Looking for a doctor or a test by name?
+          <a class="link-light fw-semibold" href="{{ url_for('public.search') }}">Search everything</a>
+        </p>
+      </div>
+      <div class="col-lg-5">
+        <div class="row g-3 text-center">
+          {% for number, label, icon in [(counts.cities, 'Cities', 'geo-alt'),
+                                         (counts.hospitals, 'Hospitals, clinics and labs', 'hospital'),
+                                         (counts.doctors, 'Doctors', 'person-badge'),
+                                         (counts.facilities, 'Tests and scans', 'clipboard2-pulse')] %}
+          <div class="col-6">
+            <div class="hero-stat p-3">
+              <i class="bi bi-{{ icon }} fs-3"></i>
+              <div class="fs-2 fw-bold lh-1 mt-1">{{ number }}</div>
+              <div class="small">{{ label }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block page %}
+<section class="mb-5">
+  <h2 class="h4 mb-3">Our services</h2>
+  <div class="row g-3">
+    {% for title, text, icon, url in [
+      ('Consultants and specialists', 'See each doctor\'s timings and fee, check the free slots and book an appointment.',
+       'person-badge', url_for('public.doctors')),
+      ('Pathology and paramedical', 'Blood and urine tests, ECG and other paramedical services at hospitals and labs.',
+       'droplet-half', url_for('public.facilities', category='Pathology & Paramedical')),
+      ('Radiology', 'X-ray, ultrasound, CT, MRI and other scans, booked for a date and time that suits you.',
+       'radioactive', url_for('public.facilities', category='Radiology')),
+    ] %}
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm lift">
+        <div class="card-body">
+          <div class="icon-tile mb-3"><i class="bi bi-{{ icon }}"></i></div>
+          <h3 class="h5"><a class="stretched-link text-reset text-decoration-none" href="{{ url }}">{{ title }}</a></h3>
+          <p class="text-secondary mb-0">{{ text }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="mb-5">
+  <h2 class="h4 mb-3">How it works</h2>
+  <div class="row g-3">
+    {% for title, text in [
+      ('Select your city', 'See the hospitals, clinics and laboratories near you.'),
+      ('Choose a doctor or a facility', 'Compare timings, fees and other details.'),
+      ('Check the free slots', 'Pick a date and see which times are still free.'),
+      ('Book and manage', 'Recheck, reschedule or cancel from your account, and read your test results there.'),
+    ] %}
+    <div class="col-sm-6 col-lg-3">
+      <div class="step h-100">
+        <span class="step-number">{{ loop.index }}</span>
+        <h3 class="h6 mt-3">{{ title }}</h3>
+        <p class="text-secondary small mb-0">{{ text }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section>
+  <h2 class="h4 mb-3">Browse by city</h2>
+  <div class="d-flex flex-wrap gap-2">
+    {% for city in cities %}
+    <a class="btn btn-outline-primary" href="{{ url_for('public.hospitals', city=city.id) }}">
+      <i class="bi bi-geo-alt"></i> {{ city.name }}
+    </a>
+    {% else %}
+    <p class="text-secondary">No cities have been added yet.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

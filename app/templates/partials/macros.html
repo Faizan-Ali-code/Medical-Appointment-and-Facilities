@@ -1,0 +1,111 @@
+{# Small building blocks used by many pages. Import them "with context". #}
+
+{# One form field with its label and error messages, inside a grid column. Extra arguments go to the input. #}
+{% macro field(f, col='col-12', hint=none) %}
+<div class="{{ col }}">
+  <label class="form-label" for="{{ f.id }}">
+    {{ f.label.text }}{% if f.flags.required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}
+  </label>
+  {{ f(class=('form-select' if f.type == 'SelectField' else 'form-control') ~ (' is-invalid' if f.errors), **kwargs) }}
+  {% for error in f.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+  {% if hint %}<div class="form-text">{{ hint }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{# A group of check boxes (the working days). #}
+{% macro checks(f, col='col-12') %}
+<div class="{{ col }}">
+  <span class="form-label d-block">{{ f.label.text }} <span class="text-danger" aria-hidden="true">*</span></span>
+  {% for option in f %}
+  <div class="form-check form-check-inline">
+    {{ option(class='form-check-input') }}
+    <label class="form-check-label" for="{{ option.id }}">{{ option.label.text }}</label>
+  </div>
+  {% endfor %}
+  {% for error in f.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+</div>
+{% endmacro %}
+
+{# A button that sends a POST request; `confirm` is a question to ask first. #}
+{% macro post_button(url, label, css='btn btn-sm btn-outline-danger', icon=none, confirm=none) %}
+<form method="post" action="{{ url }}" class="d-inline"{% if confirm %} data-confirm="{{ confirm }}"{% endif %}>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="next" value="{{ request.full_path }}">
+  <button class="{{ css }}">{% if icon %}<i class="bi bi-{{ icon }}"></i> {% endif %}{{ label }}</button>
+</form>
+{% endmacro %}
+
+{# A <select> of a filter bar. `options` holds plain values, (value, label) pairs or records with id and name. #}
+{% macro filter_select(name, all_label, options) %}
+<select name="{{ name }}" class="form-select" aria-label="{{ all_label }}">
+  <option value="">{{ all_label }}</option>
+  {% for option in options %}
+  {% if option is string %}{% set value, label = option, option %}
+  {% elif option.id is defined %}{% set value, label = option.id, option.name %}
+  {% else %}{% set value, label = option %}{% endif %}
+  <option value="{{ value }}" {{ 'selected' if request.args.get(name) == value|string }}>{{ label }}</option>
+  {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro search_box(placeholder) %}
+<div class="input-group">
+  <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+  <input type="search" name="q" class="form-control" placeholder="{{ placeholder }}" aria-label="{{ placeholder }}"
+         value="{{ request.args.get('q', '') }}" maxlength="80">
+</div>
+{% endmacro %}
+
+{% macro status(appointment) %}
+{% set look = {'booked': 'text-bg-primary', 'completed': 'text-bg-success', 'cancelled': 'text-bg-secondary'} %}
+<span class="badge rounded-pill {{ look[appointment.status] }}">{{ appointment.status|capitalize }}</span>
+{% endmacro %}
+
+{# The stored picture of a hospital or doctor, or a coloured tile with an icon when there is none. #}
+{% macro picture(image, alt, icon, css) %}
+{% if image %}
+<img src="{{ url_for('public.upload', filename=image) }}" alt="{{ alt }}" class="{{ css }}" loading="lazy">
+{% else %}
+<div class="{{ css }} no-picture" role="img" aria-label="{{ alt }}"><i class="bi bi-{{ icon }}"></i></div>
+{% endif %}
+{% endmacro %}
+
+{% macro empty(icon, title, text='') %}
+<div class="empty text-center text-secondary py-5">
+  <i class="bi bi-{{ icon }} display-5"></i>
+  <p class="h5 mt-3 mb-1 text-body">{{ title }}</p>
+  {% if text %}<p class="mb-0">{{ text }}</p>{% endif %}
+  {{ caller() if caller }}
+</div>
+{% endmacro %}
+
+{% macro pagination(page) %}
+{% if page.pages > 1 %}
+<nav class="mt-4" aria-label="Pages">
+  <ul class="pagination justify-content-center flex-wrap">
+    <li class="page-item {{ 'disabled' if not page.has_prev }}">
+      <a class="page-link" href="{{ page_url(page.prev_num) if page.has_prev else '#' }}">Previous</a>
+    </li>
+    {% for number in page.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=1) %}
+    {% if number %}
+    <li class="page-item {{ 'active' if number == page.page }}">
+      <a class="page-link" href="{{ page_url(number) }}">{{ number }}</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+    {% endif %}
+    {% endfor %}
+    <li class="page-item {{ 'disabled' if not page.has_next }}">
+      <a class="page-link" href="{{ page_url(page.next_num) if page.has_next else '#' }}">Next</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{# "Showing 1-10 of 42" under a list. #}
+{% macro showing(page, noun) %}
+<p class="text-secondary small mb-3">
+  {% if page.total %}Showing {{ page.first }}&ndash;{{ page.last }} of {{ page.total }} {{ noun }}{% else %}No {{ noun }} found{% endif %}
+</p>
+{% endmacro %}

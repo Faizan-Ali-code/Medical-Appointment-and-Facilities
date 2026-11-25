@@ -1,0 +1,79 @@
+{# Cards of the public lists and of the search results. Import them "with context". #}
+{% from 'partials/macros.html' import picture with context %}
+
+{% macro kind_icon(kind) %}{{ {'Hospital': 'hospital', 'Clinic': 'house-heart', 'Laboratory': 'eyedropper'}[kind] }}{% endmacro %}
+{% macro category_icon(category) %}{{ 'radioactive' if category == 'Radiology' else 'droplet-half' }}{% endmacro %}
+
+{% macro hospital_card(hospital) %}
+<div class="col-md-6 col-lg-4">
+  <article class="card h-100 shadow-sm lift">
+    {{ picture(hospital.image, hospital.name, kind_icon(hospital.kind), 'card-img-top cover') }}
+    <div class="card-body">
+      <span class="badge bg-primary-subtle text-primary-emphasis mb-2">
+        <i class="bi bi-{{ kind_icon(hospital.kind) }}"></i> {{ hospital.kind }}
+      </span>
+      <h2 class="h5 card-title mb-1">
+        <a class="stretched-link text-reset text-decoration-none"
+           href="{{ url_for('public.hospital', id=hospital.id) }}">{{ hospital.name }}</a>
+      </h2>
+      <p class="text-secondary small mb-2"><i class="bi bi-geo-alt"></i> {{ hospital.address }}</p>
+      <p class="small mb-0"><i class="bi bi-clock"></i> {{ hospital.timings }}</p>
+    </div>
+    <div class="card-footer bg-white small text-secondary">
+      {{ hospital.doctors|length }} doctor{{ 's' if hospital.doctors|length != 1 }} &middot;
+      {{ hospital.facilities|length }} facilit{{ 'ies' if hospital.facilities|length != 1 else 'y' }}
+    </div>
+  </article>
+</div>
+{% endmacro %}
+
+{% macro doctor_card(doctor) %}
+<div class="col-md-6 col-lg-4">
+  <article class="card h-100 shadow-sm lift">
+    <div class="card-body">
+      <div class="d-flex gap-3 mb-3">
+        {{ picture(doctor.image, doctor.name, 'person', 'avatar') }}
+        <div>
+          <h2 class="h6 card-title mb-1">
+            <a class="stretched-link text-reset text-decoration-none"
+               href="{{ url_for('public.doctor', id=doctor.id) }}">{{ doctor.name }}</a>
+          </h2>
+          <p class="text-primary small fw-semibold mb-1">{{ doctor.specialization }}</p>
+          <p class="text-secondary small mb-0">{{ doctor.qualification }}</p>
+        </div>
+      </div>
+      <p class="small mb-1"><i class="bi bi-hospital"></i> {{ doctor.hospital.name }}, {{ doctor.hospital.city.name }}</p>
+      <p class="small mb-0"><i class="bi bi-clock"></i> {{ doctor.days_label }}, {{ doctor.hours_label }}</p>
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">{{ doctor.fee|money }}</span>
+      <span class="text-primary small fw-semibold">View and book <i class="bi bi-arrow-right"></i></span>
+    </div>
+  </article>
+</div>
+{% endmacro %}
+
+{% macro facility_card(facility) %}
+<div class="col-md-6 col-lg-4">
+  <article class="card h-100 shadow-sm lift">
+    <div class="card-body">
+      <div class="d-flex gap-3 mb-3">
+        <div class="icon-tile"><i class="bi bi-{{ category_icon(facility.category) }}"></i></div>
+        <div>
+          <h2 class="h6 card-title mb-1">
+            <a class="stretched-link text-reset text-decoration-none"
+               href="{{ url_for('public.facility', id=facility.id) }}">{{ facility.name }}</a>
+          </h2>
+          <p class="text-primary small fw-semibold mb-0">{{ facility.category }}</p>
+        </div>
+      </div>
+      <p class="small mb-1"><i class="bi bi-hospital"></i> {{ facility.hospital.name }}, {{ facility.hospital.city.name }}</p>
+      <p class="small mb-0"><i class="bi bi-clock"></i> {{ facility.days_label }}, {{ facility.hours_label }}</p>
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">{{ facility.fee|money }}</span>
+      <span class="text-primary small fw-semibold">View and book <i class="bi bi-arrow-right"></i></span>
+    </div>
+  </article>
+</div>
+{% endmacro %}

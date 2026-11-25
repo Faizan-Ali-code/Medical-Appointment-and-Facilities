@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html' %}
+{% from 'partials/macros.html' import empty, filter_select, pagination, search_box, showing with context %}
+{% from 'partials/cards.html' import hospital_card with context %}
+{% block title %}Hospitals, clinics and labs{% endblock %}
+
+{% block page %}
+<h1 class="h3 mb-1">Hospitals, clinics and labs</h1>
+<p class="text-secondary">Choose a place to see its doctors, facilities, timings and location.</p>
+
+<form method="get" class="row g-2 mb-3" data-autosubmit>
+  <div class="col-md">{{ search_box('Search by name, address or city') }}</div>
+  <div class="col-sm-6 col-md-3">{{ filter_select('city', 'All cities', cities) }}</div>
+  <div class="col-sm-6 col-md-2">{{ filter_select('type', 'All types', kinds) }}</div>
+  <div class="col-md-auto d-grid"><button class="btn btn-primary">Search</button></div>
+</form>
+
+{{ showing(page, 'places') }}
+<div class="row g-3">
+  {% for hospital in page.items %}{{ hospital_card(hospital) }}{% endfor %}
+</div>
+{% if not page.total %}
+  {{ empty('hospital', 'No hospitals, clinics or labs found', 'Try another city or a different search.') }}
+{% endif %}
+{{ pagination(page) }}
+{% endblock %}

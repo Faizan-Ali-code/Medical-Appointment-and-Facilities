@@ -1,0 +1,70 @@
+{% extends 'layouts/admin.html' %}
+{% from 'partials/macros.html' import empty with context %}
+{% block title %}Admin dashboard{% endblock %}
+
+{% block page %}
+<h1 class="h3 mb-4">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+  {% for number, label, icon, url in [
+    (counts.cities, 'Cities', 'geo-alt', url_for('admin.cities')),
+    (counts.hospitals, 'Hospitals, clinics and labs', 'hospital', url_for('admin.hospitals')),
+    (counts.doctors, 'Specialists', 'person-badge', url_for('admin.doctors')),
+    (counts.facilities, 'Facilities', 'clipboard2-pulse', url_for('admin.facilities')),
+    (counts.users, 'Users', 'people', url_for('admin.users', role='user')),
+    (counts.upcoming, 'Upcoming appointments', 'calendar-check', url_for('admin.appointments', status='upcoming')),
+  ] %}
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="card h-100 shadow-sm lift">
+      <div class="card-body">
+        <i class="bi bi-{{ icon }} fs-4 text-primary"></i>
+        <div class="fs-2 fw-bold lh-1 mt-2">{{ number }}</div>
+        <a class="stretched-link small text-secondary text-decoration-none" href="{{ url }}">{{ label }}</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Next appointments</h2>
+        <a class="small" href="{{ url_for('admin.appointments', status='upcoming') }}">See all</a>
+      </div>
+      {% if upcoming %}
+      <ul class="list-group list-group-flush">
+        {% for appointment in upcoming %}
+        <li class="list-group-item d-flex flex-wrap justify-content-between gap-2">
+          <span><span class="fw-semibold">{{ appointment.user.name }}</span><br>
+            <span class="small text-secondary">{{ appointment.subject.name }} &middot; {{ appointment.hospital.name }}</span></span>
+          <span class="text-end small"><span class="fw-semibold">{{ appointment.date|longdate }}</span><br>{{ appointment.time|clock }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}{{ empty('calendar-check', 'No upcoming appointments') }}{% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Tests waiting for a result <span class="badge text-bg-warning">{{ counts.awaiting }}</span></h2>
+        <a class="small" href="{{ url_for('admin.appointments', type='test', status='booked') }}">See all</a>
+      </div>
+      {% if awaiting %}
+      <ul class="list-group list-group-flush">
+        {% for appointment in awaiting %}
+        <li class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span><span class="fw-semibold">{{ appointment.subject.name }}</span><br>
+            <span class="small text-secondary">{{ appointment.user.name }} &middot; {{ appointment.date|longdate }}</span></span>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.appointment_result', id=appointment.id) }}">Enter result</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}{{ empty('clipboard2-check', 'All results have been entered') }}{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

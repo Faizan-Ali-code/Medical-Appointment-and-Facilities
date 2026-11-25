@@ -1,0 +1,45 @@
+{% extends 'admin/list.html' %}
+{% from 'partials/macros.html' import filter_select, post_button, search_box, status with context %}
+{% set heading, noun = 'Manage appointments', 'appointments' %}
+
+{% block filters %}
+<div class="col-md">{{ search_box('Search by user name, email or phone') }}</div>
+<div class="col-sm-4 col-md-2">{{ filter_select('type', 'All types', [('doctor', 'Doctors'), ('test', 'Tests and scans')]) }}</div>
+<div class="col-sm-4 col-md-2">{{ filter_select('status', 'Any status', [('upcoming', 'Upcoming'), ('booked', 'Booked'), ('completed', 'Completed'), ('cancelled', 'Cancelled')]) }}</div>
+<div class="col-sm-4 col-md-2">
+  <input type="date" name="date" class="form-control" aria-label="Date" value="{{ request.args.get('date', '') }}">
+</div>
+{% endblock %}
+
+{% block head %}<th>Date and time</th><th>User</th><th>Appointment</th><th>Status</th><th>Result</th>{% endblock %}
+
+{% block rows %}
+{% for appointment in page.items %}
+{% set open = appointment.status == 'booked' %}
+{% set due = appointment.date <= today() %}
+<tr>
+  <td class="text-nowrap"><span class="fw-semibold">{{ appointment.date|longdate }}</span><br>{{ appointment.time|clock }}</td>
+  <td>{{ appointment.user.name }}<br><span class="small text-secondary">{{ appointment.user.phone }}</span></td>
+  <td>
+    <span class="fw-semibold">{{ appointment.subject.name }}</span><br>
+    <span class="small text-secondary">{{ 'Test or scan' if appointment.is_test else appointment.doctor.specialization }} &middot; {{ appointment.hospital.name }}</span>
+  </td>
+  <td>{{ status(appointment) }}</td>
+  <td class="small">{{ appointment.result|truncate(50) if appointment.result else '' }}</td>
+  <td class="text-end text-nowrap">
+    {% if appointment.is_test and due and appointment.status != 'cancelled' %}
+    <a class="btn btn-sm btn-outline-success" href="{{ url_for('admin.appointment_result', id=appointment.id) }}">
+      {{ 'Edit result' if appointment.result else 'Enter result' }}
+    </a>
+    {% elif open and due %}
+    {{ post_button(url_for('admin.appointment_complete', id=appointment.id), 'Complete', 'btn btn-sm btn-outline-success') }}
+    {% endif %}
+    {% if open %}
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.appointment_reschedule', id=appointment.id) }}">Reschedule</a>
+    {{ post_button(url_for('admin.appointment_cancel', id=appointment.id), 'Cancel',
+                   confirm='Cancel the appointment of ' ~ appointment.user.name ~ ' for ' ~ appointment.subject.name ~ '?') }}
+    {% endif %}
+  </td>
+</tr>
+{% endfor %}
+{% endblock %}
